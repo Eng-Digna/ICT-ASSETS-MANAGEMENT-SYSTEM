@@ -25,6 +25,9 @@
       <router-link to="/audit" class="nav-item">
         <span class="nav-icon">📜</span><span>Audit Logs</span>
       </router-link>
+      <router-link to="/disposal" class="nav-item">
+        <span class="nav-icon">🗑️</span><span>Disposal</span>
+      </router-link>
     </nav>
     <div class="sidebar-footer">
       <button @click="handleLogout" class="logout-btn">
