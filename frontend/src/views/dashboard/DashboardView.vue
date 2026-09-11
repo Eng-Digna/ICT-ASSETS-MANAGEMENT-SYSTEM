@@ -5,7 +5,7 @@
         <h1>Dashboard</h1>
         <p class="text-muted">Welcome to the TPA ICT Assets Management System</p>
       </div>
-      <button class="btn-primary">+ Register Asset</button>
+      <RouterLink class="btn-primary" :to="{ name: 'Assets' }">View Asset Directory</RouterLink>
     </div>
     
     <div class="stats-grid">
