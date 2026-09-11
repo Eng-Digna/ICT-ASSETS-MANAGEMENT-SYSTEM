@@ -28,9 +28,12 @@ public class JwtUtil {
     public String generateToken(String username, List<String> roles) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
+        List<String> authorityValues = roles.stream()
+                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                .toList();
         return JWT.create()
                 .withSubject(username)
-                .withClaim("roles", roles)
+                .withClaim("roles", authorityValues)
                 .withIssuedAt(now)
                 .withExpiresAt(exp)
                 .sign(algorithm);

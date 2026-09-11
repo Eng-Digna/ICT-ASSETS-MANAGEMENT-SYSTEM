@@ -1,24 +1,29 @@
-package tz.go.tpa.ict_assets_management.dto.response;
+package tz.go.tpa.ict_assets_management.dto.request;
 
-import java.util.List;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-public class UserResponse {
-    private Long id;
+public class CreateUserRequest {
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
     private String email;
+
+    @NotBlank(message = "First name is required")
     private String firstName;
+
+    @NotBlank(message = "Last name is required")
     private String lastName;
-    private String fullName;
-    private boolean enabled;
-    private List<String> roles;
 
-    public Long getId() {
-        return id;
-    }
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    private String password;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private boolean enabled = true;
 
     public String getUsername() {
         return username;
@@ -52,12 +57,12 @@ public class UserResponse {
         this.lastName = lastName;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getPassword() {
+        return password;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public boolean isEnabled() {
@@ -66,13 +71,5 @@ public class UserResponse {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public List<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
     }
 }
