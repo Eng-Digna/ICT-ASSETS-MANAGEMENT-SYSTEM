@@ -1,16 +1,12 @@
 <template>
   <header class="header">
     <div class="header-left">
+      <div class="header-brand"><span class="brand-mark">T</span><div><strong>ICT-AMS</strong><small>Tanzania Ports Authority</small></div></div>
       <h1 class="page-title">{{ currentPage }}</h1>
     </div>
     <div class="header-right">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Search..." />
-      </div>
       <div class="user-profile">
-        <span class="avatar">{{ userInitials }}</span>
-        <span class="user-name">{{ userName }}</span>
+        <span class="user-name">{{ userName }} — ICT Manager ▾</span>
       </div>
     </div>
   </header>
@@ -42,22 +38,21 @@ const userInitials = computed(() => {
 
 <style scoped>
 .header {
-  background: white; padding: 0 24px; height: 56px;
+  background: #123f73; padding: 0 26px; height: 72px;
   display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid #E4E7EC;
+  border-bottom: 1px solid #123f73;
 }
-.page-title { font-size: 16px; font-weight: 600; color: #0B2265; margin: 0; }
+.page-title { display: none; }
+.header-brand { display: flex; align-items: center; gap: 12px; color: #fff; }
+.header-brand strong { display: block; font-size: 18px; }
+.header-brand small { display: block; margin-top: 3px; color: #f4cf55; font-size: 12px; }
+.brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #dfa30b; color: #123f73; font-weight: 700; }
 .header-right { display: flex; align-items: center; gap: 16px; }
-.search-box {
-  display: flex; align-items: center; background: #F5F7FA;
-  border-radius: 6px; padding: 6px 12px; border: 1px solid #E4E7EC;
-}
-.search-box input { border: none; background: transparent; outline: none; font-size: 13px; width: 200px; }
 .user-profile { display: flex; align-items: center; gap: 8px; }
 .avatar {
   width: 32px; height: 32px; border-radius: 50%; background: #00A3DD;
   color: white; display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 600;
 }
-.user-name { font-size: 13px; font-weight: 500; color: #344054; }
+.user-name { font-size: 14px; color: #fff; }
 </style>

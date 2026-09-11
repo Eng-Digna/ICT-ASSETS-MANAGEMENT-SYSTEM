@@ -1,34 +1,27 @@
 <template>
   <div class="login-page">
-    <div class="login-container">
-      <div class="login-brand">
-        <div class="brand-icon">⚓</div>
-        <h1 class="brand-title">TPA</h1>
-        <p class="brand-subtitle">ICT ASSETS MANAGEMENT</p>
-      </div>
-      
-      <div class="login-card">
-        <h2 class="login-title">Welcome Back</h2>
-        <p class="login-subtitle">Sign in to access the system</p>
-        
-        <form @submit.prevent="handleLogin">
-          <div class="form-group">
-            <label>Email Address</label>
-            <input type="email" v-model="email" placeholder="Enter your email" required />
-          </div>
-          
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" v-model="password" placeholder="Enter your password" required />
-          </div>
-          
-          <button type="submit" class="btn-primary btn-full">Sign In</button>
-          
-          <p class="login-footer">
-            Don't have an account? <router-link to="/register">Register</router-link>
-          </p>
-        </form>
-      </div>
+    <div class="login-card">
+      <div class="brand-mark">T</div>
+      <h1 class="login-title">ICT Asset Management System</h1>
+      <p class="login-subtitle">Tanzania Ports Authority</p>
+
+      <form @submit.prevent="handleLogin">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" v-model="username" type="text" placeholder="e.g. jmwkalinga" autocomplete="username" required />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" v-model="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+        </div>
+
+        <button type="submit" class="btn-primary">Log In</button>
+      </form>
+
+      <p class="login-help">Forgot your password? Contact your ICT Administrator</p>
+      <div class="login-divider"></div>
+      <p class="login-notice">Access restricted to authorised TPA ICT users</p>
     </div>
   </div>
 </template>
@@ -38,12 +31,12 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const email = ref('');
+const username = ref('');
 const password = ref('');
 
 const handleLogin = () => {
   localStorage.setItem('isAuthenticated', 'true');
-  localStorage.setItem('user', JSON.stringify({ name: 'Sarah Collins', email: email.value }));
+  localStorage.setItem('user', JSON.stringify({ name: username.value, username: username.value }));
   router.push('/');
 };
 </script>
@@ -54,85 +47,99 @@ const handleLogin = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0B2265 0%, #071741 100%);
-  padding: 20px;
+  padding: 32px 20px;
+  background: #f5f6f8;
 }
 
-.login-container {
-  display: flex;
-  max-width: 900px;
-  width: 100%;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-}
-
-.login-brand {
-  flex: 1;
-  padding: 48px 40px;
-  background: #0B2265;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.login-card {
+  width: min(100%, 526px);
+  padding: 32px 48px 18px;
+  background: #fff;
+  border: 1px solid #d9e0e8;
+  border-radius: 14px;
+  box-shadow: 0 2px 5px rgba(16, 24, 40, 0.04);
   text-align: center;
 }
 
-.brand-icon { font-size: 48px; margin-bottom: 16px; }
-.brand-title { font-size: 32px; font-weight: 700; margin: 0; }
-.brand-subtitle { font-size: 11px; opacity: 0.7; margin-top: 8px; letter-spacing: 3px; }
-
-.login-card {
-  flex: 1;
-  padding: 40px;
-  max-width: 420px;
+.brand-mark {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #dfa30b;
+  color: #123f73;
+  font-size: 20px;
+  font-weight: 700;
 }
 
-.login-title { font-size: 24px; font-weight: 600; margin: 0 0 4px 0; }
-.login-subtitle { font-size: 14px; color: #667085; margin: 0 0 24px 0; }
+.login-title {
+  color: #123f73;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
 
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.login-subtitle {
+  color: #5d6878;
+  font-size: 14px;
+  margin: 5px 0 22px;
+}
+
+.form-group { margin-bottom: 22px; text-align: left; }
+.form-group label { display: block; color: #596576; font-size: 14px; margin-bottom: 4px; }
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #E4E7EC;
-  border-radius: 6px;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 2px solid #cbd3de;
+  border-radius: 8px;
   font-size: 14px;
+  color: #1d2939;
 }
 .form-group input:focus {
   outline: none;
-  border-color: #00A3DD;
-  box-shadow: 0 0 0 3px rgba(0,163,221,0.1);
+  border-color: #123f73;
+  box-shadow: 0 0 0 3px rgba(18, 63, 115, 0.1);
 }
 
 .btn-primary {
+  width: 100%;
+  min-height: 52px;
   padding: 12px 24px;
-  background: #00A3DD;
-  color: white;
+  background: #dfa30b;
+  color: #102f55;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s ease;
 }
-.btn-primary:hover { background: #008C95; }
-.btn-full { width: 100%; }
+.btn-primary:hover { background: #c99008; }
 
-.login-footer {
-  margin-top: 20px;
+.login-help {
+  margin: 17px 0 45px;
   text-align: center;
   font-size: 13px;
-  color: #667085;
+  color: #5d6878;
 }
-.login-footer a { color: #00A3DD; text-decoration: none; }
+
+.login-divider {
+  height: 1px;
+  background: #e7eaee;
+}
+
+.login-notice {
+  margin: 15px 0 0;
+  color: #5d6878;
+  font-size: 12px;
+}
 
 @media (max-width: 768px) {
-  .login-container { flex-direction: column; }
-  .login-brand { padding: 32px 24px; }
-  .login-card { max-width: 100%; padding: 24px; }
+  .login-card { padding: 28px 24px 18px; }
 }
 </style>

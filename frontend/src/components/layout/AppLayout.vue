@@ -18,6 +18,6 @@ import Header from './Header.vue';
 <style scoped>
 .app-layout { display: flex; min-height: 100vh; background: #F5F7FA; }
 .main-content { flex: 1; display: flex; flex-direction: column; margin-left: 220px; min-height: 100vh; }
-.content-area { flex: 1; padding: 24px; overflow-y: auto; }
+.content-area { flex: 1; padding: 12px 30px 28px; overflow-y: auto; }
 @media (max-width: 768px) { .main-content { margin-left: 0; } }
 </style>

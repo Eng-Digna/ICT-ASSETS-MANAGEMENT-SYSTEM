@@ -47,7 +47,7 @@ const handleLogout = () => {
 
 <style scoped>
 .sidebar {
-  width: 220px; height: 100vh; background: #0B2265; color: white;
+  width: 220px; height: 100vh; background: #082d4b; color: white;
   display: flex; flex-direction: column; position: fixed; left: 0; top: 0;
   overflow-y: auto; z-index: 100;
 }
@@ -59,11 +59,11 @@ const handleLogout = () => {
 .nav-menu { flex: 1; padding: 16px 12px; }
 .nav-item {
   display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-  color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 6px;
+  color: rgba(255,255,255,0.9); text-decoration: none; border-radius: 0;
   margin-bottom: 4px; font-size: 13px; transition: all 0.2s;
 }
 .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
-.nav-item.router-link-active { background: rgba(0,163,221,0.15); color: white; }
+.nav-item.router-link-active { background: #dfa30b; color: #102f55; font-weight: 700; }
 .nav-icon { font-size: 18px; width: 24px; }
 .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
 .logout-btn {

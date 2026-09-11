@@ -1,238 +1,125 @@
 <template>
   <div class="dashboard">
-    <div class="page-header">
-      <div>
-        <h1>Dashboard</h1>
-        <p class="text-muted">Welcome to the TPA ICT Assets Management System</p>
-      </div>
-      <RouterLink class="btn-primary" :to="{ name: 'Assets' }">View Asset Directory</RouterLink>
+    <div class="page-heading">
+      <h1>Dashboard</h1>
+      <p>Overview across TPA Headquarters and all Bandari stations</p>
     </div>
-    
-    <div class="stats-grid">
-      <div v-for="stat in stats" :key="stat.title" class="stat-card">
-        <div class="stat-icon">{{ stat.icon }}</div>
-        <div class="stat-content">
-          <h3>{{ stat.value }}</h3>
-          <p>{{ stat.title }}</p>
-          <span class="stat-change" :class="stat.change.startsWith('+') ? 'positive' : 'negative'">
-            {{ stat.change }}
-          </span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="charts-row">
-      <div class="chart-card">
-        <h4>Assets by Status</h4>
-        <div v-for="item in statusBreakdown" :key="item.label" class="status-item">
-          <span class="status-label">{{ item.label }}</span>
-          <div class="status-bar">
-            <div class="status-bar-fill" :style="{ width: item.percentage + '%', background: item.color }"></div>
-          </div>
-          <span class="status-count">{{ item.count }}</span>
-        </div>
-      </div>
-      
-      <div class="chart-card">
-        <h4>Recent Activity</h4>
-        <div v-for="activity in recentActivities" :key="activity.id" class="activity-item">
-          <span class="activity-icon">{{ activity.icon }}</span>
-          <div>
-            <div class="activity-description">{{ activity.description }}</div>
-            <div class="activity-time">{{ activity.time }}</div>
+
+    <section class="kpi-grid" aria-label="Management KPIs">
+      <article v-for="kpi in kpis" :key="kpi.label" class="kpi-card" :class="`accent-${kpi.accent}`">
+        <p>{{ kpi.label }}</p>
+        <strong>{{ kpi.value }}</strong>
+      </article>
+    </section>
+
+    <section class="overview-grid">
+      <article class="panel station-panel">
+        <h2>Asset Distribution by Station</h2>
+        <div class="station-chart" aria-label="Asset distribution by station">
+          <div v-for="station in stationDistribution" :key="station.name" class="station-bar-group">
+            <strong>{{ station.value }}</strong>
+            <div class="station-bar-track">
+              <div class="station-bar" :class="station.color" :style="{ height: `${(station.value / maxStationValue) * 100}%` }"></div>
+            </div>
+            <span>{{ station.name }}</span>
           </div>
         </div>
+      </article>
+
+      <article class="panel audit-panel">
+        <h2>Recent Audit Activity</h2>
+        <ul class="audit-list">
+          <li v-for="activity in auditActivity" :key="activity">{{ activity }}</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="watchlist">
+      <h2>Warranty Expiring Soon</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Serial No.</th><th>Type</th><th>Station</th><th>Warranty End</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in warrantyItems" :key="item.serial">
+              <td>{{ item.serial }}</td><td>{{ item.type }}</td><td>{{ item.station }}</td><td>{{ item.warrantyEnd }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-    
-    <div class="card">
-      <div class="card-header">
-        <h4>Recent Assignments</h4>
-        <a href="#" class="view-all">View All →</a>
-      </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Asset</th>
-            <th>Assignee</th>
-            <th>Department</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="assignment in recentAssignments" :key="assignment.id">
-            <td><strong>{{ assignment.asset }}</strong></td>
-            <td>{{ assignment.assignee }}</td>
-            <td>{{ assignment.department }}</td>
-            <td><span class="status-badge" :class="assignment.status.toLowerCase()">{{ assignment.status }}</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
-const stats = ref([
-  { title: 'Total Assets', value: '1,450', icon: '💻', change: '+12%' },
-  { title: 'Available', value: '320', icon: '✅', change: '+8%' },
-  { title: 'In Use', value: '1,050', icon: '📝', change: '+5%' },
-  { title: 'Maintenance', value: '80', icon: '🔧', change: '-3%' }
+const kpis = ref([
+  { label: 'Total Assets', value: '1,284', accent: 'navy' },
+  { label: 'Assigned', value: '1,046', accent: 'gold' },
+  { label: 'Pending Disposal', value: '12', accent: 'red' },
+  { label: 'Active Users', value: '57', accent: 'green' }
 ]);
 
-const statusBreakdown = ref([
-  { label: 'Active', count: 850, percentage: 58, color: '#12B76A' },
-  { label: 'Assigned', count: 350, percentage: 24, color: '#2E90FA' },
-  { label: 'Maintenance', count: 180, percentage: 12, color: '#F79009' },
-  { label: 'Disposed', count: 70, percentage: 6, color: '#98A2B3' }
+const stationDistribution = ref([
+  { name: 'Dar es Salaam', value: 480, color: 'navy' },
+  { name: 'Tanga', value: 210, color: 'gold' },
+  { name: 'Mtwara', value: 160, color: 'green' },
+  { name: 'Mwanza', value: 240, color: 'navy' },
+  { name: 'Kigoma', value: 120, color: 'gold' }
 ]);
 
-const recentActivities = ref([
-  { id: 1, icon: '📦', description: 'Dell XPS 13 assigned to John Doe', time: '2 min ago' },
-  { id: 2, icon: '🔧', description: 'HP ProBook maintenance completed', time: '15 min ago' },
-  { id: 3, icon: '➕', description: 'iPhone 14 Pro registered', time: '1 hour ago' },
-  { id: 4, icon: '📋', description: 'Audit log review completed', time: '2 hours ago' }
+const maxStationValue = computed(() => Math.max(...stationDistribution.value.map((station) => station.value)));
+
+const auditActivity = ref([
+  'Asset AST-1042 registered by R. Juma',
+  'Disposal DSP-018 approved by V. Mkuchika',
+  'User account created: A. Ngowi',
+  'Asset AST-0987 reassigned — Mtwara',
+  'Maintenance logged for AST-0512'
 ]);
 
-const recentAssignments = ref([
-  { id: 1, asset: 'Dell XPS 13', assignee: 'John Doe', department: 'ICT', status: 'Active' },
-  { id: 2, asset: 'HP ProBook', assignee: 'Jane Smith', department: 'Finance', status: 'Active' },
-  { id: 3, asset: 'iPhone 14 Pro', assignee: 'Mike Johnson', department: 'HR', status: 'Pending' },
-  { id: 4, asset: 'MacBook Pro', assignee: 'Sarah Wilson', department: 'Operations', status: 'Active' }
+const warrantyItems = ref([
+  { serial: 'SN-88231', type: 'Laptop', station: 'Dar es Salaam', warrantyEnd: '12/09/2026' },
+  { serial: 'SN-77120', type: 'Printer', station: 'Tanga', warrantyEnd: '20/09/2026' },
+  { serial: 'SN-65590', type: 'Desktop', station: 'Mwanza', warrantyEnd: '30/09/2026' }
 ]);
 </script>
 
 <style scoped>
-.dashboard { max-width: 1400px; margin: 0 auto; }
+.dashboard { max-width: 1280px; margin: 0 auto; }
+.page-heading { margin-bottom: 16px; }
+.page-heading h1 { margin: 0; color: #202020; font-size: 24px; line-height: 1.2; }
+.page-heading p { margin: 4px 0 0; color: #5d6878; font-size: 14px; }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-.page-header h1 { font-size: 24px; font-weight: 600; color: #101828; margin: 0; }
-.text-muted { color: #667085; margin: 4px 0 0 0; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.kpi-card { min-height: 102px; padding: 18px 20px; background: #fff; border: 1px solid #d7dee8; border-left: 8px solid; border-radius: 9px; }
+.kpi-card p { margin: 0 0 4px; color: #5d6878; font-size: 14px; }
+.kpi-card strong { color: #202020; font-size: 29px; line-height: 1; }
+.accent-navy { border-left-color: #123f73; }.accent-gold { border-left-color: #dfa30b; }.accent-red { border-left-color: #ba2a25; }.accent-green { border-left-color: #2f8436; }
 
-.btn-primary {
-  padding: 10px 20px;
-  background: #00A3DD;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-.btn-primary:hover { background: #008C95; }
+.overview-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; margin-bottom: 10px; }
+.panel { min-height: 302px; padding: 18px 20px; background: #fff; border: 1px solid #d7dee8; border-radius: 9px; }
+.panel h2, .watchlist h2 { margin: 0; color: #202020; font-size: 17px; }
+.station-chart { height: 230px; display: flex; align-items: end; justify-content: space-around; gap: 14px; padding: 12px 10px 0; }
+.station-bar-group { display: flex; flex: 1; height: 100%; min-width: 58px; flex-direction: column; align-items: center; justify-content: end; }
+.station-bar-group strong { margin-bottom: 4px; color: #202020; font-size: 13px; }
+.station-bar-track { width: min(100%, 100px); height: 170px; display: flex; align-items: end; }
+.station-bar { width: 100%; min-height: 16px; border-radius: 5px 5px 2px 2px; }
+.station-bar.navy { background: #123f73; }.station-bar.gold { background: #dfa30b; }.station-bar.green { background: #2f8436; }
+.station-bar-group span { margin-top: 8px; color: #5d6878; font-size: 12px; white-space: nowrap; }
+.audit-list { margin: 12px 0 0; padding: 0; list-style: none; }
+.audit-list li { position: relative; padding: 11px 0 11px 21px; color: #303030; font-size: 13px; }
+.audit-list li::before { content: ''; position: absolute; top: 17px; left: 1px; width: 8px; height: 8px; border-radius: 50%; background: #dfa30b; }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
+.watchlist h2 { margin-bottom: 10px; }
+.table-wrap { overflow-x: auto; border: 1px solid #d7dee8; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { padding: 11px 13px; text-align: left; font-size: 13px; }
+th { color: #123f73; background: #e8eef5; font-weight: 700; }
+tbody tr:nth-child(even) { background: #f7f8fa; }
 
-.stat-card {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-.stat-icon { font-size: 28px; }
-.stat-content h3 { font-size: 20px; font-weight: 700; margin: 0; color: #101828; }
-.stat-content p { font-size: 13px; color: #667085; margin: 4px 0 0 0; }
-.stat-change { font-size: 12px; font-weight: 500; }
-.stat-change.positive { color: #12B76A; }
-.stat-change.negative { color: #D32F2F; }
-
-.charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.chart-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-.chart-card h4 { font-size: 14px; font-weight: 600; margin: 0 0 16px 0; }
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.status-label { font-size: 13px; color: #475467; width: 80px; }
-.status-bar { flex: 1; height: 6px; background: #F2F4F7; border-radius: 999px; overflow: hidden; }
-.status-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
-.status-count { font-size: 13px; font-weight: 500; color: #344054; }
-
-.activity-item {
-  display: flex;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #F2F4F7;
-}
-.activity-item:last-child { border-bottom: none; }
-.activity-description { font-size: 13px; color: #344054; }
-.activity-time { font-size: 11px; color: #98A2B3; margin-top: 2px; }
-
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.card-header h4 { font-size: 14px; font-weight: 600; margin: 0; }
-.view-all { font-size: 13px; color: #00A3DD; text-decoration: none; }
-
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table thead th {
-  text-align: left;
-  padding: 8px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #667085;
-  border-bottom: 1px solid #E4E7EC;
-}
-.data-table tbody td {
-  padding: 10px 12px;
-  font-size: 13px;
-  border-bottom: 1px solid #F2F4F7;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 500;
-}
-.status-badge.active { background: rgba(18,183,106,0.12); color: #12B76A; }
-.status-badge.pending { background: rgba(247,144,9,0.12); color: #F79009; }
-
-@media (max-width: 1024px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .charts-row { grid-template-columns: 1fr; }
-}
-@media (max-width: 768px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
-}
+@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); }.overview-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .kpi-grid { grid-template-columns: 1fr; }.station-chart { gap: 4px; padding-left: 0; padding-right: 0; }.station-bar-group span { font-size: 10px; transform: rotate(-25deg); transform-origin: top center; } }
 </style>
