@@ -50,8 +50,8 @@ public class UserServiceImpl implements UserService {
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setEnabled(request.isEnabled());
 
-        Role defaultRole = roleRepository.findByName(RoleName.STAFF)
-                .orElseGet(() -> roleRepository.save(new Role(RoleName.STAFF, "Default staff role")));
+        Role defaultRole = roleRepository.findByName(RoleName.REGISTRAR)
+            .orElseGet(() -> roleRepository.save(new Role(RoleName.REGISTRAR, "Station-level ICT officer")));
         user.getRoles().add(defaultRole);
 
         return toResponse(userRepository.save(user));

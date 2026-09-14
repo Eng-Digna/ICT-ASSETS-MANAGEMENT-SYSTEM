@@ -3,6 +3,7 @@ package tz.go.tpa.ict_assets_management.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tz.go.tpa.ict_assets_management.dto.request.AssetSearchFilter;
 import tz.go.tpa.ict_assets_management.dto.request.RegisterAssetRequest;
@@ -22,6 +23,7 @@ public class AssetController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
     public ResponseEntity<AssetResponse> registerAsset(@Valid @RequestBody RegisterAssetRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(assetService.registerAsset(request));
     }
@@ -50,7 +52,9 @@ public class AssetController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
     public ResponseEntity<AssetResponse> updateAsset(@PathVariable Long id, @RequestBody UpdateAssetRequest request) {
         return ResponseEntity.ok(assetService.updateAsset(id, request));
     }
+
 }

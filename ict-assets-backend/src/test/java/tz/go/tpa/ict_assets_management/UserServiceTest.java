@@ -25,7 +25,7 @@ class UserServiceTest {
 
         when(userRepository.existsByUsername("alice")).thenReturn(false);
         when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
-        when(roleRepository.findByName(RoleName.STAFF)).thenReturn(Optional.of(new Role(RoleName.STAFF, "Default staff role")));
+        when(roleRepository.findByName(RoleName.REGISTRAR)).thenReturn(Optional.of(new Role(RoleName.REGISTRAR, "Station-level ICT officer")));
 
         User savedUser = new User();
         savedUser.setId(1L);
@@ -35,7 +35,7 @@ class UserServiceTest {
         savedUser.setLastName("Wang");
         savedUser.setPasswordHash(passwordEncoder.encode("Secret@123"));
         savedUser.setEnabled(true);
-        savedUser.getRoles().add(new Role(RoleName.STAFF, "Default staff role"));
+        savedUser.getRoles().add(new Role(RoleName.REGISTRAR, "Station-level ICT officer"));
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
@@ -52,6 +52,6 @@ class UserServiceTest {
         assertNotNull(response);
         assertEquals("alice", response.getUsername());
         assertTrue(passwordEncoder.matches("Secret@123", savedUser.getPasswordHash()));
-        assertTrue(response.getRoles().contains("STAFF"));
+        assertTrue(response.getRoles().contains("REGISTRAR"));
     }
 }

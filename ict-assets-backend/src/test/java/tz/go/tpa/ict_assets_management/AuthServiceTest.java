@@ -19,7 +19,7 @@ class AuthServiceTest {
         AuthService authService = new AuthService() {
             @Override
             public JwtAuthenticationResponse login(LoginRequest loginRequest) {
-                return new JwtAuthenticationResponse("token", "admin", java.util.List.of("ADMIN"));
+                return new JwtAuthenticationResponse("token", "admin", java.util.List.of("ADMINISTRATOR"));
             }
         };
 
@@ -28,7 +28,7 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals("token", response.getToken());
         assertEquals("admin", response.getUsername());
-        assertTrue(response.getRoles().contains("ADMIN"));
+        assertTrue(response.getRoles().contains("ADMINISTRATOR"));
     }
 
     @Test

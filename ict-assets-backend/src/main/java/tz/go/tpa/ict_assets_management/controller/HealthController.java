@@ -15,7 +15,7 @@ import java.util.Map;
 public class HealthController {
 
     @GetMapping("/system/health")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getSystemHealth() {
         Map<String, Object> health = Map.of(
                 "status", "UP",

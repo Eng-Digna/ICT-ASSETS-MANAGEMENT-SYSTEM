@@ -23,7 +23,7 @@ public class OrganizationController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<OrganizationResponse>> create(@Valid @RequestBody CreateOrganizationRequest request) {
         OrganizationResponse r = organizationService.createOrganization(request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -31,28 +31,28 @@ public class OrganizationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<Page<OrganizationResponse>>> list(Pageable pageable) {
         Page<OrganizationResponse> page = organizationService.getOrganizations(pageable);
         return ResponseEntity.ok(new ApiResponse<>(true, "Organizations retrieved successfully", page, "/api/v1/organizations"));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<OrganizationResponse>> get(@PathVariable Long id) {
         OrganizationResponse r = organizationService.getOrganizationById(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "Organization retrieved successfully", r, "/api/v1/organizations/" + id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<OrganizationResponse>> update(@PathVariable Long id, @Valid @RequestBody UpdateOrganizationRequest request) {
         OrganizationResponse r = organizationService.updateOrganization(id, request);
         return ResponseEntity.ok(new ApiResponse<>(true, "Organization updated successfully", r, "/api/v1/organizations/" + id));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         organizationService.deleteOrganization(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "Organization deleted successfully", null, "/api/v1/organizations/" + id));

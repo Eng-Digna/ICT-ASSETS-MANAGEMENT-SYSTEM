@@ -9,6 +9,12 @@ import tz.go.tpa.ict_assets_management.controller.DashboardController;
 import tz.go.tpa.ict_assets_management.dto.response.ApiResponse;
 import tz.go.tpa.ict_assets_management.dto.response.DashboardOverviewResponse;
 import tz.go.tpa.ict_assets_management.entity.Asset;
+import tz.go.tpa.ict_assets_management.entity.Department;
+import tz.go.tpa.ict_assets_management.entity.Station;
+import tz.go.tpa.ict_assets_management.enums.AssetStatus;
+import tz.go.tpa.ict_assets_management.enums.AssetType;
+import tz.go.tpa.ict_assets_management.repository.DepartmentRepository;
+import tz.go.tpa.ict_assets_management.repository.StationRepository;
 import tz.go.tpa.ict_assets_management.entity.User;
 import tz.go.tpa.ict_assets_management.repository.AssetRepository;
 import tz.go.tpa.ict_assets_management.repository.UserRepository;
@@ -26,17 +32,31 @@ class DashboardServiceTest {
     private AssetRepository assetRepository;
 
     @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private StationRepository stationRepository;
+
+    @Autowired
     private DashboardService dashboardService;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
         assetRepository.deleteAll();
+        departmentRepository.deleteAll();
+        stationRepository.deleteAll();
 
         userRepository.save(createUser("active@example.com", true));
         userRepository.save(createUser("inactive@example.com", false));
-        assetRepository.save(new Asset());
-        assetRepository.save(new Asset());
+        Department department = new Department();
+        department.setName("Dashboard Department");
+        department = departmentRepository.save(department);
+        Station station = new Station();
+        station.setName("Dashboard Station");
+        station = stationRepository.save(station);
+        assetRepository.save(createAsset("DASH-001", department, station));
+        assetRepository.save(createAsset("DASH-002", department, station));
     }
 
     @Test
@@ -72,5 +92,15 @@ class DashboardServiceTest {
         user.setLastName("User");
         user.setEnabled(enabled);
         return user;
+    }
+
+    private Asset createAsset(String serialNumber, Department department, Station station) {
+        Asset asset = new Asset();
+        asset.setAssetType(AssetType.DESKTOP);
+        asset.setSerialNumber(serialNumber);
+        asset.setStatus(AssetStatus.REGISTERED);
+        asset.setDepartment(department);
+        asset.setStation(station);
+        return asset;
     }
 }

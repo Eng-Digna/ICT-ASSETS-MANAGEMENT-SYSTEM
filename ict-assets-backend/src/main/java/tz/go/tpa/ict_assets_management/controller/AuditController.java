@@ -24,13 +24,13 @@ public class AuditController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('AUDITOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<Page<AuditLog>>> getAudits(@ModelAttribute AuditLogFilter filter, Pageable pageable) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Audit logs retrieved", auditService.getAudits(filter, pageable), "/api/v1/audits"));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('AUDITOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<AuditLog>> getAudit(@PathVariable Long id) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Audit log retrieved", auditService.getById(id), "/api/v1/audits/" + id));
     }
