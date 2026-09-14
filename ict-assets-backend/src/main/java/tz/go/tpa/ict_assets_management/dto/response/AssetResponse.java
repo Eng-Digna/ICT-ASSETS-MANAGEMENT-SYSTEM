@@ -1,49 +1,20 @@
-package tz.go.tpa.ict_assets_management.entity;
-
-import jakarta.persistence.*;
-import tz.go.tpa.ict_assets_management.enums.AssetStatus;
-import tz.go.tpa.ict_assets_management.enums.AssetType;
+package tz.go.tpa.ict_assets_management.dto.response;
 
 import java.time.LocalDate;
 
-@Entity
-public class Asset {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class AssetResponse {
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AssetType assetType;
-
-    @Column(nullable = false, unique = true)
+    private String assetType;
     private String serialNumber;
-
     private String macAddress;
     private String brand;
     private String model;
     private String operatingSystem;
-
     private LocalDate warrantyStartDate;
     private LocalDate warrantyEndDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AssetStatus status = AssetStatus.REGISTERED;
-
-    @ManyToOne
-    @JoinColumn(name = "department_id", nullable = false)
-    private Department department;
-
-    @ManyToOne
-    @JoinColumn(name = "station_id", nullable = false)
-    private Station station;
-
-    @Version
-    private Long version;
-
-    public Asset() {
-    }
+    private String status;
+    private Long departmentId;
+    private Long stationId;
 
     // getters/setters
     public Long getId() {
@@ -54,11 +25,11 @@ public class Asset {
         this.id = id;
     }
 
-    public AssetType getAssetType() {
+    public String getAssetType() {
         return assetType;
     }
 
-    public void setAssetType(AssetType assetType) {
+    public void setAssetType(String assetType) {
         this.assetType = assetType;
     }
 
@@ -118,31 +89,27 @@ public class Asset {
         this.warrantyEndDate = d;
     }
 
-    public AssetStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(AssetStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    public Department getDepartment() {
-        return department;
+    public Long getDepartmentId() {
+        return departmentId;
     }
 
-    public void setDepartment(Department department) {
-        this.department = department;
+    public void setDepartmentId(Long departmentId) {
+        this.departmentId = departmentId;
     }
 
-    public Station getStation() {
-        return station;
+    public Long getStationId() {
+        return stationId;
     }
 
-    public void setStation(Station station) {
-        this.station = station;
-    }
-
-    public Long getVersion() {
-        return version;
+    public void setStationId(Long stationId) {
+        this.stationId = stationId;
     }
 }
