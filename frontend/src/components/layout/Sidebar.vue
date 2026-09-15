@@ -39,24 +39,11 @@
       </router-link>
 
     </nav>
-    <div class="sidebar-footer">
-      <button @click="handleLogout" class="logout-btn">
-        <span class="nav-icon">🚪</span><span>Logout</span>
-      </button>
-    </div>
   </aside>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
 import tpaLogo from '../../assets/tpa-logo.png';
-const router = useRouter();
-const handleLogout = () => {
-  localStorage.removeItem('isAuthenticated');
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
-  router.push('/login');
-};
 </script>
 
 <style scoped>
@@ -79,12 +66,4 @@ const handleLogout = () => {
 .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
 .nav-item.router-link-active { background: #dfa30b; color: #102f55; font-weight: 700; }
 .nav-icon { font-size: 18px; width: 24px; }
-.sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
-.logout-btn {
-  display: flex; align-items: center; gap: 12px; width: 100%;
-  padding: 10px 12px; background: none; border: none;
-  color: rgba(255,255,255,0.5); font-size: 13px; cursor: pointer;
-  border-radius: 6px; transition: all 0.2s;
-}
-.logout-btn:hover { background: rgba(211,47,47,0.15); color: white; }
 </style>
