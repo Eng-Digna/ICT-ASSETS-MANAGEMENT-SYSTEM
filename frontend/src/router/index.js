@@ -46,6 +46,16 @@ const routes = [
         path: 'disposal',
         name: 'DisposalConfirmation',
         component: () => import('@/views/disposal/DisposalConfirmationView.vue')
+      },
+      {
+        path: 'settings',
+        name: 'Maintenance',
+        component: () => import('@/views/maintenance/MaintenanceView.vue')
+      },
+      {
+        path: 'reports',
+        name: 'Reports',
+        component: () => import('@/views/reports/ReportsView.vue')
       }
     ]
   },

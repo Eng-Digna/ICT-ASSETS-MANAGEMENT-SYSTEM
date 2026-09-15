@@ -60,7 +60,7 @@ const handleLogout = () => {
 
 <style scoped>
 .sidebar {
-  width: 220px; height: 100vh; background: #082d4b; color: white;
+  width: 220px; height: 100vh; background: #123f73; color: white;
   display: flex; flex-direction: column; position: fixed; left: 0; top: 0;
   overflow-y: auto; z-index: 100;
 }
