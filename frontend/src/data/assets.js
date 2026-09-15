@@ -16,3 +16,34 @@ export const assets = [
 export const assetTypes = [...new Set(assets.map((asset) => asset.type))].sort();
 export const departments = [...new Set(assets.map((asset) => asset.department))].sort();
 export const stations = [...new Set(assets.map((asset) => asset.station))].sort();
+
+export function validateAssetRecord(record, existingAssets = assets) {
+  const errors = {};
+  const requiredFields = ['type', 'serialNumber', 'macAddress', 'brand', 'department', 'station'];
+
+  requiredFields.forEach((field) => {
+    if (!String(record[field] || '').trim()) errors[field] = 'This field is required.';
+  });
+
+  const serialNumber = String(record.serialNumber || '').trim().toLowerCase();
+  if (serialNumber && existingAssets.some((asset) => asset.serialNumber.trim().toLowerCase() === serialNumber && asset.id !== record.id)) {
+    errors.serialNumber = 'This serial number already exists.';
+  }
+
+  if (record.warrantyStartDate && record.warrantyEndDate && record.warrantyEndDate < record.warrantyStartDate) {
+    errors.warrantyEndDate = 'Warranty end date must be after the start date.';
+  }
+
+  return errors;
+}
+
+export function saveAssetRecord(record) {
+  const errors = validateAssetRecord(record);
+  if (Object.keys(errors).length) return { success: false, errors };
+
+  const savedRecord = { ...record, id: record.id || record.serialNumber.trim() };
+  const existingIndex = assets.findIndex((asset) => asset.id === savedRecord.id);
+  if (existingIndex === -1) assets.push(savedRecord);
+  else assets.splice(existingIndex, 1, savedRecord);
+  return { success: true, asset: savedRecord };
+}

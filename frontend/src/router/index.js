@@ -8,6 +8,12 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/auth/RegisterView.vue'),
+    meta: { requiresGuest: true }
+  },
+  {
     path: '/',
     component: () => import('@/components/layout/AppLayout.vue'),
     meta: { requiresAuth: true },
@@ -21,6 +27,11 @@ const routes = [
         path: 'assets',
         name: 'Assets',
         component: () => import('@/views/assets/AssetsView.vue')
+      },
+      {
+        path: 'assets/register',
+        name: 'AssetRegister',
+        component: () => import('@/views/assets/AssetDetailView.vue')
       },
       {
         path: 'assets/:id',

@@ -2,7 +2,7 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="brand">
-        <span class="brand-icon">⚓</span>
+        <img :src="tpaLogo" alt="Tanzania Ports Authority logo" class="brand-logo" />
         <div>
           <div class="brand-name">TPA</div>
           <div class="brand-subtitle">ICT ASSETS</div>
@@ -49,6 +49,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+import tpaLogo from '../../assets/tpa-logo.png';
 const router = useRouter();
 const handleLogout = () => {
   localStorage.removeItem('isAuthenticated');
@@ -66,7 +67,7 @@ const handleLogout = () => {
 }
 .sidebar-header { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brand-icon { font-size: 28px; }
+.brand-logo { width: 50px; height: 42px; object-fit: contain; flex: 0 0 auto; }
 .brand-name { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
 .brand-subtitle { font-size: 8px; opacity: 0.6; letter-spacing: 2px; text-transform: uppercase; }
 .nav-menu { flex: 1; padding: 16px 12px; }

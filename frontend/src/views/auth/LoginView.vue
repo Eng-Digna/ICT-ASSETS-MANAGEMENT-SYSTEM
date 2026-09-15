@@ -1,7 +1,7 @@
 <template>
   <div class="login-page">
     <div class="login-card">
-      <div class="brand-mark">T</div>
+      <img :src="tpaLogo" alt="Tanzania Ports Authority logo" class="brand-logo" />
       <h1 class="login-title">ICT Asset Management System</h1>
       <p class="login-subtitle">Tanzania Ports Authority</p>
 
@@ -20,6 +20,7 @@
       </form>
 
       <p class="login-help">Forgot your password? Contact your ICT Administrator</p>
+      <p class="login-help">Do you have an account? <router-link to="/register">Register here</router-link></p>
       <div class="login-divider"></div>
       <p class="login-notice">Access restricted to authorised TPA ICT users</p>
     </div>
@@ -29,6 +30,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import tpaLogo from '../../assets/tpa-logo.png';
 
 const router = useRouter();
 const username = ref('');
@@ -61,17 +63,11 @@ const handleLogin = () => {
   text-align: center;
 }
 
-.brand-mark {
-  width: 60px;
-  height: 60px;
+.brand-logo {
+  width: 100px;
+  height: 62px;
   margin: 0 auto 14px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #dfa30b;
-  color: #123f73;
-  font-size: 20px;
-  font-weight: 700;
+  object-fit: contain;
 }
 
 .login-title {

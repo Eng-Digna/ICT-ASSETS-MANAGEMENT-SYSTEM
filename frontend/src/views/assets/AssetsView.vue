@@ -44,7 +44,7 @@ const filteredAssets = computed(() => {
 const hasFilters = computed(() => Boolean(searchQuery.value || filters.station || filters.department || filters.type));
 function clearFilters() { searchQuery.value = ''; filters.station = ''; filters.department = ''; filters.type = ''; }
 function statusClass(status) { return status.toLowerCase().replaceAll(' ', '-'); }
-function registerAsset() { router.push({ name: 'AssetDetail', params: { id: 'new' } }); }
+function registerAsset() { router.push({ name: 'AssetRegister' }); }
 </script>
 
 <style scoped>

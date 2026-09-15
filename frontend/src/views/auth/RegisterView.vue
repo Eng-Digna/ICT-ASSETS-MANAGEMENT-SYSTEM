@@ -2,7 +2,7 @@
   <div class="register-page">
     <div class="register-container">
       <div class="register-brand">
-        <div class="brand-icon">⚓</div>
+        <img :src="tpaLogo" alt="Tanzania Ports Authority logo" class="brand-logo" />
         <h1 class="brand-title">TPA</h1>
         <p class="brand-subtitle">ICT ASSETS MANAGEMENT</p>
       </div>
@@ -23,13 +23,16 @@
           </div>
           
           <div class="form-group">
-            <label>Department</label>
-            <select v-model="department" required>
-              <option value="">Select Department</option>
-              <option>ICT</option>
-              <option>Finance</option>
-              <option>HR</option>
-              <option>Operations</option>
+            <label>Station</label>
+            <select v-model="Station" required>
+              <option value="">Select Station</option>
+              <option>DAR-ES-SALAAM</option>
+              <option>TANGA</option>
+              <option>KIGOMA</option>
+              <option>MWANZA</option>
+              <option>MTWARA</option>
+              <option>LINDI</option>
+
             </select>
           </div>
           
@@ -47,11 +50,12 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import tpaLogo from '../../assets/tpa-logo.png';
 
 const router = useRouter();
 const name = ref('');
 const email = ref('');
-const department = ref('');
+const Station = ref('');
 
 const handleRegister = () => {
   alert('Registration request submitted! You will receive an email once approved.');
@@ -91,7 +95,7 @@ const handleRegister = () => {
   text-align: center;
 }
 
-.brand-icon { font-size: 48px; margin-bottom: 16px; }
+.brand-logo { width: 150px; height: 92px; object-fit: contain; margin-bottom: 16px; }
 .brand-title { font-size: 32px; font-weight: 700; margin: 0; }
 .brand-subtitle { font-size: 11px; opacity: 0.7; margin-top: 8px; letter-spacing: 3px; }
 
