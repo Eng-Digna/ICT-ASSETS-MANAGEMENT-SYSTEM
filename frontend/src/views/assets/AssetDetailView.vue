@@ -6,6 +6,7 @@
       <span v-if="!isNew" class="status" :class="statusClass(asset.status)">{{ asset.status }}</span>
     </header>
     <form class="record-card" @submit.prevent="saveRecord">
+      <h2>Asset Details</h2>
       <div class="form-grid">
         <label>Serial Number<input v-model="record.serialNumber" required /></label>
         <label>Asset Type<input v-model="record.type" required /></label>
@@ -17,6 +18,7 @@
         <label>Purchase Date<input v-model="record.purchaseDate" type="date" /></label>
         <label class="full-width">Notes<textarea v-model="record.notes" rows="4"></textarea></label>
       </div>
+      <p v-if="duplicateSerial" class="validation-alert">Validation: Serial number "{{ record.serialNumber }}" already exists in the register.</p>
       <div class="form-actions"><RouterLink class="cancel-button" :to="{ name: 'Assets' }">Cancel</RouterLink><button class="primary-button" type="submit">Save Asset</button></div>
     </form>
   </section>
@@ -25,16 +27,22 @@
 <script setup>
 import { computed, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { assets } from '@/data/assets';
+import { assets, assetTypes, departments, stations } from '@/data/assets';
 
 const route = useRoute();
 const router = useRouter();
 const isNew = computed(() => route.params.id === 'new');
-const source = assets.find((item) => item.id === route.params.id) || { id: 'new', serialNumber: '', type: '', brand: '', assignedUser: '', department: '', station: '', status: 'Available', purchaseDate: '', notes: '' };
+const source = assets.find((item) => item.id === route.params.id) || { id: 'new', serialNumber: '', type: '', macAddress: '', brand: '', model: '', operatingSystem: '', assignedUser: '', department: '', station: '', status: 'Available', purchaseDate: '', warrantyStartDate: '', warrantyEndDate: '', notes: '' };
 const asset = source;
 const record = reactive({ ...source });
+const duplicateSerial = computed(() => {
+  const serialNumber = record.serialNumber.trim().toLowerCase();
+  return serialNumber && assets.some((item) => item.id !== asset.id && item.serialNumber.trim().toLowerCase() === serialNumber);
+});
 function statusClass(status) { return status.toLowerCase().replaceAll(' ', '-'); }
 function saveRecord() {
+  record.serialNumber = record.serialNumber.trim();
+  if (duplicateSerial.value) return;
   if (isNew.value) {
     assets.push({ ...record, id: record.serialNumber });
   } else {
@@ -58,10 +66,13 @@ h1 { color: #1D2939; font-size: 24px; margin: 0; }
 .disposed { background: #FDE0DE; color: #C9362B; }
 .under-maintenance { background: #DCEEFE; color: #2674A8; }
 .record-card { background: white; border: 1px solid #DDE3EA; border-radius: 6px; padding: 24px; }
+.record-card h2 { color: #1D2939; font-size: 15px; margin-bottom: 16px; }
 .form-grid { display: grid; gap: 18px 20px; grid-template-columns: 1fr 1fr; }
 .form-grid label { color: #475467; display: flex; flex-direction: column; font-size: 12px; font-weight: 700; gap: 7px; }
 .form-grid input, .form-grid select, .form-grid textarea { border: 1px solid #CDD5DF; border-radius: 5px; color: #344054; font: inherit; font-weight: 400; padding: 9px 10px; }
 .form-grid textarea { resize: vertical; }
+.field-error { color: #B42318; font-size: 11px; font-weight: 600; }
+.validation-alert { background: #FEE4E2; border-radius: 5px; color: #B42318; font-size: 13px; margin-top: 20px; padding: 10px 12px; }
 .full-width { grid-column: 1 / -1; }
 .form-actions { border-top: 1px solid #E9EDF2; display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 18px; }
 .primary-button, .cancel-button { border-radius: 5px; font-size: 13px; padding: 9px 16px; text-decoration: none; }

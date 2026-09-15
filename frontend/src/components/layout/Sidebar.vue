@@ -14,10 +14,13 @@
         <span class="nav-icon">📊</span><span>Dashboard</span>
       </router-link>
       <router-link to="/assets" class="nav-item">
-        <span class="nav-icon">💻</span><span>Assets</span>
+        <span class="nav-icon">💻</span><span>Assets Directory</span>
+      </router-link>
+      <router-link to="/assets/new" class="nav-item">
+        <span class="nav-icon">➕</span><span>Register Assets</span>
       </router-link>
       <router-link to="/users" class="nav-item">
-        <span class="nav-icon">👥</span><span>Users</span>
+        <span class="nav-icon">👥</span><span>Users & Roles</span>
       </router-link>
       <router-link to="/assignments" class="nav-item">
         <span class="nav-icon">📋</span><span>Assignments</span>
@@ -26,8 +29,15 @@
         <span class="nav-icon">📜</span><span>Audit Logs</span>
       </router-link>
       <router-link to="/disposal" class="nav-item">
-        <span class="nav-icon">🗑️</span><span>Disposal</span>
+        <span class="nav-icon">🗑️</span><span>Disposal Request</span>
       </router-link>
+      <router-link to="/settings" class="nav-item">
+        <span class="nav-icon">⚙️</span><span>Maintenance</span>
+      </router-link>
+      <router-link to="/reports" class="nav-item">
+        <span class="nav-icon">📊</span><span>Reports</span>
+      </router-link>
+
     </nav>
     <div class="sidebar-footer">
       <button @click="handleLogout" class="logout-btn">
