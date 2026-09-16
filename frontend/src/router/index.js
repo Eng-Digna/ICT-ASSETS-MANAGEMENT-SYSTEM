@@ -34,6 +34,11 @@ const routes = [
         component: () => import('@/views/assets/AssetDetailView.vue')
       },
       {
+        path: 'assets/new',
+        name: 'AssetRegisterNew',
+        component: () => import('@/views/assets/AssetDetailView.vue')
+      },
+      {
         path: 'assets/:id',
         name: 'AssetDetail',
         component: () => import('@/views/assets/AssetDetailView.vue')
@@ -83,7 +88,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'Login', query: { redirect: to.fullPath } });

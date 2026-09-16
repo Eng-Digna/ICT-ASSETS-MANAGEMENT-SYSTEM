@@ -1,6 +1,7 @@
 <template>
   <header class="header">
     <div class="header-left">
+      <button class="menu-button" type="button" aria-label="Open navigation menu" @click="$emit('toggle-sidebar')">☰</button>
       <div class="header-brand"><span class="brand-mark">T</span><div><strong>ICT-AMS</strong><small>Tanzania Ports Authority</small></div></div>
       <h1 class="page-title">{{ currentPage }}</h1>
     </div>
@@ -35,12 +36,13 @@
 </template>
 
 <script setup>
+defineEmits(['toggle-sidebar']);
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const user = JSON.parse(localStorage.getItem('user') || '{"name": "Admin"}');
+const user = JSON.parse(sessionStorage.getItem('user') || '{"name": "Admin"}');
 const isMenuOpen = ref(false);
 const isPasswordDialogOpen = ref(false);
 const passwordError = ref('');
@@ -72,7 +74,7 @@ function changePassword() {
   passwordSuccess.value = 'Password updated successfully.';
   Object.assign(passwordForm, { current: '', next: '', confirm: '' });
 }
-function handleLogout() { localStorage.removeItem('isAuthenticated'); localStorage.removeItem('user'); localStorage.removeItem('token'); isMenuOpen.value = false; router.push('/login'); }
+function handleLogout() { sessionStorage.removeItem('isAuthenticated'); sessionStorage.removeItem('user'); sessionStorage.removeItem('token'); isMenuOpen.value = false; router.push('/login'); }
 </script>
 
 <style scoped>
@@ -82,6 +84,7 @@ function handleLogout() { localStorage.removeItem('isAuthenticated'); localStora
   border-bottom: 1px solid #123f73;
 }
 .page-title { display: none; }
+.menu-button { background: transparent; border: 0; color: white; cursor: pointer; display: none; font-size: 22px; padding: 4px; }
 .header-brand { display: flex; align-items: center; gap: 12px; color: #fff; }
 .header-brand strong { display: block; font-size: 18px; }
 .header-brand small { display: block; margin-top: 3px; color: #f4cf55; font-size: 12px; }
@@ -98,4 +101,11 @@ function handleLogout() { localStorage.removeItem('isAuthenticated'); localStora
 .dialog-backdrop { align-items: center; background: rgba(16, 24, 40, .45); display: flex; inset: 0; justify-content: center; padding: 20px; position: fixed; z-index: 50; }
 .password-dialog { background: white; border-radius: 8px; box-shadow: 0 16px 36px rgba(16, 24, 40, .22); max-width: 430px; padding: 22px; width: 100%; }
 .dialog-header { align-items: flex-start; display: flex; justify-content: space-between; margin-bottom: 18px; }.dialog-eyebrow { color: #2E90C8; font-size: 11px; font-weight: 700; letter-spacing: .08em; margin: 0 0 5px; text-transform: uppercase; }.password-dialog h2 { color: #1D2939; font-size: 20px; margin: 0; }.close-button { background: transparent; border: 0; color: #667085; cursor: pointer; font-size: 24px; line-height: 1; }.password-dialog label { color: #475467; display: grid; font-size: 12px; font-weight: 700; gap: 6px; margin-bottom: 13px; }.password-dialog input { border: 1px solid #CDD5DF; border-radius: 5px; color: #344054; padding: 10px; }.password-error,.password-success { font-size: 12px; margin: 3px 0 13px; }.password-error { color: #B42318; }.password-success { color: #16834D; }.dialog-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }.cancel-button,.save-button { border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 700; padding: 9px 13px; }.cancel-button { background: white; border: 1px solid #CDD5DF; color: #475467; }.save-button { background: #2E90C8; border: 0; color: white; }
+@media (max-width: 768px) {
+  .header { height: 64px; padding: 0 16px; }
+  .menu-button { display: block; }
+  .header-left { align-items: center; display: flex; gap: 10px; }
+  .header-brand { gap: 8px; }.brand-mark { height: 32px; width: 32px; }.header-brand strong { font-size: 16px; }.header-brand small { font-size: 10px; }
+}
+@media (max-width: 420px) { .header { padding: 0 12px; }.header-brand small { display: none; }.profile-dropdown { position: fixed; right: 12px; top: 58px; } }
 </style>

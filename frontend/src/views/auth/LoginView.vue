@@ -37,8 +37,8 @@ const username = ref('');
 const password = ref('');
 
 const handleLogin = () => {
-  localStorage.setItem('isAuthenticated', 'true');
-  localStorage.setItem('user', JSON.stringify({ name: username.value, username: username.value }));
+  sessionStorage.setItem('isAuthenticated', 'true');
+  sessionStorage.setItem('user', JSON.stringify({ name: username.value, username: username.value }));
   router.push('/');
 };
 </script>

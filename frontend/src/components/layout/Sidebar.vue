@@ -1,5 +1,7 @@
 <template>
-  <aside class="sidebar">
+  <div v-if="isOpen" class="sidebar-overlay" @click="$emit('close')"></div>
+  <aside class="sidebar" :class="{ 'is-open': isOpen }">
+    <button class="close-sidebar" type="button" aria-label="Close navigation menu" @click="$emit('close')">×</button>
     <div class="sidebar-header">
       <div class="brand">
         <img :src="tpaLogo" alt="Tanzania Ports Authority logo" class="brand-logo" />
@@ -43,6 +45,8 @@
 </template>
 
 <script setup>
+defineProps({ isOpen: Boolean });
+defineEmits(['close']);
 import tpaLogo from '../../assets/tpa-logo.png';
 </script>
 
@@ -52,6 +56,8 @@ import tpaLogo from '../../assets/tpa-logo.png';
   display: flex; flex-direction: column; position: fixed; left: 0; top: 0;
   overflow-y: auto; z-index: 100;
 }
+.close-sidebar { display: none; }
+.sidebar-overlay { display: none; }
 .sidebar-header { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand-logo { width: 50px; height: 42px; object-fit: contain; flex: 0 0 auto; }
@@ -66,4 +72,10 @@ import tpaLogo from '../../assets/tpa-logo.png';
 .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
 .nav-item.router-link-active { background: #dfa30b; color: #102f55; font-weight: 700; }
 .nav-icon { font-size: 18px; width: 24px; }
+@media (max-width: 768px) {
+  .sidebar { box-shadow: 8px 0 24px rgba(16, 24, 40, .18); transform: translateX(-100%); transition: transform .2s ease; }
+  .sidebar.is-open { transform: translateX(0); }
+  .sidebar-overlay { background: rgba(16, 24, 40, .45); display: block; inset: 0; position: fixed; z-index: 99; }
+  .close-sidebar { background: transparent; border: 0; color: white; cursor: pointer; display: block; font-size: 28px; line-height: 1; padding: 4px 12px; position: absolute; right: 0; top: 8px; }
+}
 </style>
