@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Disposal Confirmation</title>
+    <style>
+      :root {
+        --navy: #0b2265;
+        --navy-soft: #122d7a;
+        --sky: #00a3dd;
+        --teal: #008c95;
+        --success: #12b76a;
+        --warning: #f79009;
+        --danger: #d32f2f;
+        --white: #ffffff;
+        --gray-50: #f5f7fa;
+        --gray-100: #f2f4f7;
+        --gray-200: #e4e7ec;
+        --gray-300: #d0d5dd;
+        --gray-500: #667085;
+        --gray-600: #475467;
+        --gray-700: #344054;
+        --gray-800: #1d2939;
+        --gray-900: #101828;
+        --shadow: 0 10px 28px rgba(16, 24, 40, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(180deg, #edf4fb 0%, #f5f7fa 100%);
+        color: var(--gray-900);
+      }
+
+      .dashboard-shell {
+        min-height: 100vh;
+        display: flex;
+      }
+
+      .sidebar {
+        width: 245px;
+        background: linear-gradient(180deg, var(--navy) 0%, var(--navy-soft) 100%);
+        color: var(--white);
+        padding: 24px 18px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 32px;
+        padding: 8px 10px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+        font-size: 20px;
+      }
+
+      .brand-name {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+
+      .brand-sub {
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        opacity: 0.75;
+        margin-top: 2px;
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: 0.2s ease;
+      }
+
+      .nav-item:hover,
+      .nav-item.active {
+        background: rgba(0, 163, 221, 0.16);
+        color: var(--white);
+      }
+
+      .nav-icon {
+        width: 22px;
+        display: inline-block;
+        text-align: center;
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .logout-btn {
+        width: 100%;
+        border: none;
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.8);
+        padding: 12px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .main {
+        flex: 1;
+        padding: 28px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px 18px;
+        margin-bottom: 18px;
+      }
+
+      .page-title h1 {
+        font-size: 30px;
+        margin: 0;
+      }
+
+      .page-title p {
+        margin: 6px 0 0;
+        color: var(--gray-500);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .pill {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        color: var(--gray-700);
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-weight: 600;
+      }
+
+      .ghost-btn,
+      .primary-btn,
+      .secondary-btn {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .secondary-btn {
+        background: var(--gray-100);
+        color: var(--gray-700);
+      }
+
+      .primary-btn {
+        background: linear-gradient(135deg, var(--sky), var(--teal));
+        color: var(--white);
+        box-shadow: 0 12px 22px rgba(0, 163, 221, 0.22);
+      }
+
+      .primary-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .ghost-btn {
+        background: transparent;
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
+      }
+
+      .content-wrap {
+        display: grid;
+        gap: 18px;
+      }
+
+      .success-banner {
+        display: none;
+        align-items: center;
+        gap: 14px;
+        background: rgba(18, 183, 106, 0.12);
+        border: 1px solid rgba(18, 183, 106, 0.24);
+        color: #0d6a43;
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+
+      .success-banner.show {
+        display: flex;
+      }
+
+      .success-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--success);
+        color: var(--white);
+        font-weight: 800;
+      }
+
+      .success-copy strong {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .success-copy p {
+        margin: 0;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1.7fr 0.9fr;
+        gap: 18px;
+      }
+
+      .panel {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .eyebrow {
+        margin: 0;
+        font-size: 11px;
+        color: var(--gray-500);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .asset-title {
+        font-size: 28px;
+        margin: 8px 0 0;
+      }
+
+      .status-tag {
+        background: rgba(247, 144, 9, 0.12);
+        color: #b54708;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .asset-hero {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 18px 0 16px;
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      .asset-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: grid;
+        place-items: center;
+        font-size: 30px;
+        background: linear-gradient(135deg, rgba(0, 163, 221, 0.12), rgba(0, 140, 149, 0.12));
+      }
+
+      .asset-meta h2 {
+        margin: 0;
+        font-size: 26px;
+      }
+
+      .asset-meta p {
+        margin: 5px 0 0;
+        color: var(--gray-500);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px 18px;
+        margin-top: 20px;
+      }
+
+      .info-item label {
+        display: block;
+        color: var(--gray-500);
+        font-size: 12px;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      .info-item strong {
+        font-size: 15px;
+      }
+
+      .approval-list {
+        display: grid;
+        gap: 16px;
+      }
+
+      .approval-item span {
+        display: block;
+        font-size: 12px;
+        color: var(--gray-500);
+        margin-bottom: 5px;
+      }
+
+      .approval-item strong {
+        font-size: 15px;
+      }
+
+      .approved {
+        color: var(--success);
+      }
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.9fr;
+        gap: 18px;
+      }
+
+      .detail-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .detail-row span {
+        color: var(--gray-500);
+        font-size: 13px;
+      }
+
+      .checklist {
+        list-style: none;
+        display: grid;
+        gap: 12px;
+        margin: 18px 0 0;
+        padding: 0;
+      }
+
+      .checklist li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 12px 14px;
+        color: var(--gray-700);
+      }
+
+      .checkmark {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(18, 183, 106, 0.12);
+        color: var(--success);
+        font-weight: 800;
+        display: grid;
+        place-items: center;
+      }
+
+      .confirmation-box {
+        margin-top: 14px;
+      }
+
+      .confirmation-message {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        border: 1px solid var(--gray-200);
+        padding: 18px;
+        border-radius: 16px;
+        background: #fbfcfe;
+        line-height: 1.6;
+      }
+
+      .confirmation-message input {
+        width: 18px;
+        height: 18px;
+        margin-top: 3px;
+        accent-color: var(--sky);
+      }
+
+      .button-row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      @media (max-width: 960px) {
+        .dashboard-shell {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+        }
+
+        .summary-grid,
+        .details-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .main {
+          padding: 18px;
+        }
+
+        .topbar,
+        .panel-header,
+        .detail-row,
+        .button-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .button-row {
+          width: 100%;
+        }
+
+        .button-row > button {
+          width: 100%;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">⚓</div>
+          <div>
+            <div class="brand-name">TPA</div>
+            <div class="brand-sub">ICT ASSETS</div>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Sidebar navigation">
+          <a href="#" class="nav-item"> <span class="nav-icon">📊</span> Dashboard </a>
+          <a href="#" class="nav-item"> <span class="nav-icon">💻</span> Assets </a>
+          <a href="#" class="nav-item"> <span class="nav-icon">👥</span> Users </a>
+          <a href="#" class="nav-item"> <span class="nav-icon">📋</span> Assignments </a>
+          <a href="#" class="nav-item active"> <span class="nav-icon">🗑️</span> Disposal </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="logout-btn" type="button">🚪 Logout</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="page-title">
+            <h1>Disposal Confirmation</h1>
+            <p>Asset lifecycle review and compliance approval</p>
+          </div>
+
+          <div class="header-actions">
+            <span class="pill">Request ID: DISP-2026-048</span>
+            <button class="secondary-btn" type="button">Download report</button>
+          </div>
+        </header>
+
+        <div class="content-wrap">
+          <div id="successBanner" class="success-banner" role="status" aria-live="polite">
+            <div class="success-icon">✓</div>
+            <div class="success-copy">
+              <strong>Disposal confirmed</strong>
+              <p>Asset record has been completed and submitted to the asset registry.</p>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Asset review</p>
+                  <h2 class="asset-title">TPA-IT-2048</h2>
+                </div>
+                <span class="status-tag">Pending disposal</span>
+              </div>
+
+              <div class="asset-hero">
+                <div class="asset-icon">💻</div>
+                <div class="asset-meta">
+                  <h2>Dell Latitude 7420</h2>
+                  <p>Laptop • Serial: DL7420-2048-91</p>
+                </div>
+              </div>
+
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Location</label>
+                  <strong>Nairobi HQ</strong>
+                </div>
+                <div class="info-item">
+                  <label>Assigned to</label>
+                  <strong>Grace Wanjiku</strong>
+                </div>
+                <div class="info-item">
+                  <label>Purchase date</label>
+                  <strong>12 Mar 2021</strong>
+                </div>
+                <div class="info-item">
+                  <label>Residual value</label>
+                  <strong>KSh 84,000</strong>
+                </div>
+              </div>
+            </section>
+
+            <aside class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Approval</p>
+                </div>
+              </div>
+
+              <div class="approval-list">
+                <div class="approval-item">
+                  <span>Requested by</span>
+                  <strong>Alex Njeri</strong>
+                </div>
+                <div class="approval-item">
+                  <span>Reviewed by</span>
+                  <strong>Samuel Otieno</strong>
+                </div>
+                <div class="approval-item">
+                  <span>Approval status</span>
+                  <strong class="approved">Approved</strong>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <div class="details-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Disposal details</p>
+                </div>
+              </div>
+
+              <div class="detail-list">
+                <div class="detail-row">
+                  <span>Disposal reason</span>
+                  <strong>End-of-life due to battery replacement cost</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Method</span>
+                  <strong>Certified electronic recycling</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Collection partner</span>
+                  <strong>GreenCycle Recycling Ltd.</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Scheduled date</span>
+                  <strong>26 Sep 2026</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Scrap value</span>
+                  <strong>KSh 28,500</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Compliance checklist</p>
+                </div>
+              </div>
+
+              <ul class="checklist">
+                <li><span class="checkmark">✓</span> Data sanitization certificate attached</li>
+                <li><span class="checkmark">✓</span> Asset condition assessed</li>
+                <li><span class="checkmark">✓</span> ICT and finance approvals captured</li>
+                <li><span class="checkmark">✓</span> Vendor disposal certificate verified</li>
+              </ul>
+            </section>
+          </div>
+
+          <section class="panel confirmation-box">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Final confirmation</p>
+                <h3>Confirm disposal documentation and asset handoff</h3>
+              </div>
+            </div>
+
+            <label class="confirmation-message" for="confirmCheckbox">
+              <input id="confirmCheckbox" type="checkbox" />
+              <span>
+                I confirm the asset has been reviewed and approved for disposal, and the disposal process is compliant with the
+                organization's ICT asset policy.
+              </span>
+            </label>
+
+            <div class="button-row">
+              <button class="ghost-btn" type="button" id="cancelBtn">Cancel</button>
+              <button class="primary-btn" type="button" id="confirmBtn" disabled>Confirm Disposal</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const confirmCheckbox = document.getElementById('confirmCheckbox');
+      const confirmBtn = document.getElementById('confirmBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
+      const successBanner = document.getElementById('successBanner');
+      const statusTag = document.querySelector('.status-tag');
+
+      confirmCheckbox.addEventListener('change', () => {
+        confirmBtn.disabled = !confirmCheckbox.checked;
+      });
+
+      confirmBtn.addEventListener('click', () => {
+        if (!confirmCheckbox.checked) return;
+
+        const record = {
+          requestId: 'DISP-2026-048',
+          assetTag: 'TPA-IT-2048',
+          assetName: 'Dell Latitude 7420',
+          reason: 'End-of-life due to battery replacement cost',
+          date: new Date().toISOString(),
+          status: 'Confirmed'
+        };
+
+        const disposalRecords = JSON.parse(localStorage.getItem('disposalRecords') || '[]');
+        disposalRecords.unshift(record);
+        localStorage.setItem('disposalRecords', JSON.stringify(disposalRecords.slice(0, 20)));
+
+        statusTag.textContent = 'Confirmed';
+        statusTag.style.background = 'rgba(18, 183, 106, 0.12)';
+        statusTag.style.color = '#0d6a43';
+        successBanner.classList.add('show');
+        confirmBtn.disabled = true;
+        confirmCheckbox.disabled = true;
+        confirmBtn.textContent = 'Confirmed';
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        confirmCheckbox.checked = false;
+        confirmBtn.disabled = true;
+        successBanner.classList.remove('show');
+        statusTag.textContent = 'Pending disposal';
+        statusTag.style.background = 'rgba(247, 144, 9, 0.12)';
+        statusTag.style.color = '#b54708';
+      });
+    </script>
+  </body>
+</html>
