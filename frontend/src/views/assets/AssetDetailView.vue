@@ -31,7 +31,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { assets, departments, saveAssetRecord, stations, validateAssetRecord } from '@/data/assets';
 
 const router = useRouter();
-const isNew = computed(() => route.name === 'AssetRegister' || route.params.id === 'new');
+const route = useRoute();
+const isNew = computed(() => route.name === 'AssetRegister' || route.name === 'AssetRegisterNew' || route.params.id === 'new');
 const source = assets.find((item) => item.id === route.params.id) || { id: '', serialNumber: '', type: '', macAddress: '', brand: '', model: '', operatingSystem: '', department: '', station: '', warrantyStartDate: '', warrantyEndDate: '', status: 'Available' };
 const asset = source;
 const record = reactive({ ...source });
