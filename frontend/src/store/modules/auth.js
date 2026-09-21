@@ -24,6 +24,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await loginRequest(credentials);
         const token = response.token;
         const user = {
+          id: response.userId,
           username: response.username,
           roles: response.roles || [],
           role: response.roles?.[0] || 'USER'

@@ -43,6 +43,6 @@ public class AuthServiceImpl implements AuthService {
         List<String> roles = user.getRoles().stream().map(role -> role.getName().name()).toList();
         String token = jwtUtil.generateToken(user.getUsername(), roles);
 
-        return new JwtAuthenticationResponse(token, user.getUsername(), roles);
+        return new JwtAuthenticationResponse(user.getId(), token, user.getUsername(), roles);
     }
 }

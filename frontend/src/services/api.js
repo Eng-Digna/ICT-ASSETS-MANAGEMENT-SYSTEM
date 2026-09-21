@@ -45,6 +45,10 @@ export async function login(credentials) {
   }));
 }
 
+export async function changePassword(userId, request) {
+  return unwrap(await api.put(`/users/${userId}/change-password`, request));
+}
+
 export async function listAssets(params = {}) {
   const page = await api.get('/assets', { params: { page: 0, pageSize: 1000, ...params } });
   const payload = unwrap(page);
@@ -98,6 +102,10 @@ export async function listDisposalRequests() {
 export async function listUsers() {
   const payload = unwrap(await api.get('/users', { params: { page: 0, size: 1000 } }));
   return payload.content ?? [];
+}
+
+export async function createUser(request) {
+  return unwrap(await api.post('/users', request));
 }
 
 export async function listAudits() {

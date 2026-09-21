@@ -40,6 +40,7 @@ defineEmits(['toggle-sidebar']);
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/modules/auth';
+import { changePassword as changePasswordRequest } from '@/services/api';
 
 const route = useRoute();
 const router = useRouter();
@@ -69,12 +70,18 @@ const userInitials = computed(() => {
 });
 function openPasswordDialog() { isMenuOpen.value = false; passwordError.value = ''; passwordSuccess.value = ''; isPasswordDialogOpen.value = true; }
 function closePasswordDialog() { isPasswordDialogOpen.value = false; Object.assign(passwordForm, { current: '', next: '', confirm: '' }); }
-function changePassword() {
+async function changePassword() {
   passwordError.value = '';
   passwordSuccess.value = '';
   if (passwordForm.next !== passwordForm.confirm) { passwordError.value = 'New password and confirmation do not match.'; return; }
-  passwordSuccess.value = 'Password updated successfully.';
-  Object.assign(passwordForm, { current: '', next: '', confirm: '' });
+  if (!user?.id) { passwordError.value = 'Your session does not contain a user ID. Please log in again.'; return; }
+  try {
+    await changePasswordRequest(user.id, { currentPassword: passwordForm.current, newPassword: passwordForm.next });
+    passwordSuccess.value = 'Password updated successfully.';
+    Object.assign(passwordForm, { current: '', next: '', confirm: '' });
+  } catch (error) {
+    passwordError.value = error.response?.data?.message || 'Unable to update password.';
+  }
 }
 function handleLogout() { auth.logout(); isMenuOpen.value = false; router.replace({ name: 'Login' }); }
 </script>
