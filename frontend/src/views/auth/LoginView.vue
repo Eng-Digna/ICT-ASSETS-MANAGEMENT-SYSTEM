@@ -26,7 +26,6 @@
       </form>
 
       <p class="login-help">Forgot your password? Contact your ICT Administrator</p>
-      <p class="login-help">Do you have an account? <router-link to="/register">Register here</router-link></p>
       <div class="login-divider"></div>
       <p class="login-notice">Access restricted to authorised TPA ICT users</p>
     </div>

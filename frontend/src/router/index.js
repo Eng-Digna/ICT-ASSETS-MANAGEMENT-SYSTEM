@@ -8,12 +8,6 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
-    path: '/register',
-    name: 'Register',
-    component: () => import('@/views/auth/RegisterView.vue'),
-    meta: { requiresGuest: true }
-  },
-  {
     path: '/',
     component: () => import('@/components/layout/AppLayout.vue'),
     meta: { requiresAuth: true },
