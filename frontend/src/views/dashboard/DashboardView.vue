@@ -53,38 +53,32 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { getDashboardOverview, listAssets } from '@/services/api';
 
-const kpis = ref([
-  { label: 'Total Assets', value: '1,284', accent: 'navy' },
-  { label: 'Assigned', value: '1,046', accent: 'gold' },
-  { label: 'Pending Disposal', value: '12', accent: 'red' },
-  { label: 'Active Users', value: '57', accent: 'green' }
-]);
+const kpis = ref([]);
 
-const stationDistribution = ref([
-  { name: 'Dar es Salaam', value: 480, color: 'navy' },
-  { name: 'Tanga', value: 210, color: 'gold' },
-  { name: 'Mtwara', value: 160, color: 'green' },
-  { name: 'Mwanza', value: 240, color: 'navy' },
-  { name: 'Kigoma', value: 120, color: 'gold' }
-]);
+const stationDistribution = ref([]);
 
 const maxStationValue = computed(() => Math.max(...stationDistribution.value.map((station) => station.value)));
 
-const auditActivity = ref([
-  'Asset AST-1042 registered by R. Juma',
-  'Disposal DSP-018 approved by V. Mkuchika',
-  'User account created: A. Ngowi',
-  'Asset AST-0987 reassigned — Mtwara',
-  'Maintenance logged for AST-0512'
-]);
+const auditActivity = ref([]);
 
-const warrantyItems = ref([
-  { serial: 'SN-88231', type: 'Laptop', station: 'Dar es Salaam', warrantyEnd: '12/09/2026' },
-  { serial: 'SN-77120', type: 'Printer', station: 'Tanga', warrantyEnd: '20/09/2026' },
-  { serial: 'SN-65590', type: 'Desktop', station: 'Mwanza', warrantyEnd: '30/09/2026' }
-]);
+const warrantyItems = ref([]);
+
+onMounted(async () => {
+  const [overview, assetPage] = await Promise.all([getDashboardOverview(), listAssets()]);
+  const assets = assetPage.data;
+  kpis.value = [
+    { label: 'Total Assets', value: overview.totalAssets, accent: 'navy' },
+    { label: 'Assigned', value: assets.filter((asset) => asset.status === 'ASSIGNED').length, accent: 'gold' },
+    { label: 'Pending Disposal', value: assets.filter((asset) => asset.status === 'PENDING_DISPOSAL').length, accent: 'red' },
+    { label: 'Active Users', value: overview.activeUsers, accent: 'green' }
+  ];
+  const counts = assets.reduce((result, asset) => { result[asset.station] = (result[asset.station] || 0) + 1; return result; }, {});
+  stationDistribution.value = Object.entries(counts).map(([name, value], index) => ({ name, value, color: ['navy', 'gold', 'green'][index % 3] }));
+  warrantyItems.value = assets.filter((asset) => asset.warrantyEndDate).slice(0, 5).map((asset) => ({ serial: asset.serialNumber, type: asset.type, station: asset.station, warrantyEnd: asset.warrantyEndDate }));
+});
 </script>
 
 <style scoped>

@@ -39,10 +39,12 @@
 defineEmits(['toggle-sidebar']);
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/modules/auth';
 
 const route = useRoute();
 const router = useRouter();
-const user = JSON.parse(sessionStorage.getItem('user') || '{"name": "Admin"}');
+const auth = useAuthStore();
+const user = JSON.parse(localStorage.getItem('user') || '{"name": "Admin"}');
 const isMenuOpen = ref(false);
 const isPasswordDialogOpen = ref(false);
 const passwordError = ref('');
@@ -60,7 +62,7 @@ const currentPage = computed(() => {
   return pages[route.path] || 'Dashboard';
 });
 
-const userName = user?.name || 'Admin';
+const userName = user?.name || user?.username || 'Admin';
 const userStation = user?.station || user?.Station || 'Dar es Salaam HQ';
 const userInitials = computed(() => {
   return userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -74,7 +76,7 @@ function changePassword() {
   passwordSuccess.value = 'Password updated successfully.';
   Object.assign(passwordForm, { current: '', next: '', confirm: '' });
 }
-function handleLogout() { sessionStorage.removeItem('isAuthenticated'); sessionStorage.removeItem('user'); sessionStorage.removeItem('token'); isMenuOpen.value = false; router.push('/login'); }
+function handleLogout() { auth.logout(); isMenuOpen.value = false; router.replace({ name: 'Login' }); }
 </script>
 
 <style scoped>

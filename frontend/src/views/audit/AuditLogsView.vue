@@ -83,6 +83,8 @@
 </template>
 
 <script>
+import { listAudits } from '@/services/api';
+
 export default {
   name: "AuditLogsView",
 
@@ -94,69 +96,20 @@ export default {
       fromDate: "",
       toDate: "",
 
-      users: ["J. Mushi", "A. Komba", "D. Andrea", "F. Ngoma"],
-
-      actions: [
-        "CREATE",
-        "DISPOSAL_REQUESTED",
-        "DISPOSAL_APPROVED",
-        "TRANSFER",
-        "UPDATE"
-      ],
-
-      logs: [
-        {
-          id: 1,
-          date: "02/09/2026",
-          time: "14:12:03",
-          user: "J. Mushi",
-          action: "CREATE",
-          record: "Asset SN-TPA-00231",
-          previousValue: "—",
-          newValue: "New record created"
-        },
-        {
-          id: 2,
-          date: "02/09/2026",
-          time: "11:47:29",
-          user: "A. Komba",
-          action: "DISPOSAL_REQUESTED",
-          record: "Asset SN-TPA-00119",
-          previousValue: "status: Assigned",
-          newValue: "status: Disposal Requested"
-        },
-        {
-          id: 3,
-          date: "01/09/2026",
-          time: "16:03:55",
-          user: "D. Andrea",
-          action: "DISPOSAL_APPROVED",
-          record: "Asset SN-TPA-00098",
-          previousValue: "status: Disposal Requested",
-          newValue: "status: Disposed"
-        },
-        {
-          id: 4,
-          date: "01/09/2026",
-          time: "09:22:10",
-          user: "F. Ngoma",
-          action: "TRANSFER",
-          record: "Asset SN-TPA-00204",
-          previousValue: "station: Mwanza",
-          newValue: "station: Kigoma"
-        },
-        {
-          id: 5,
-          date: "31/08/2026",
-          time: "15:40:02",
-          user: "D. Andrea",
-          action: "UPDATE",
-          record: "User check_no. 4521",
-          previousValue: "role: Viewer",
-          newValue: "role: Registrar"
-        }
-      ]
+      users: [],
+      actions: [],
+      logs: []
     };
+  },
+
+  async mounted() {
+    const logs = await listAudits();
+    this.logs = logs.map((log) => {
+      const timestamp = new Date(log.timestamp);
+      return { ...log, date: timestamp.toLocaleDateString(), time: timestamp.toLocaleTimeString(), user: log.username || `User ${log.userId}`, record: `${log.resourceType || 'Record'} ${log.resourceId || ''}`, previousValue: log.previousValue || '', newValue: log.newValue || '' };
+    });
+    this.users = [...new Set(this.logs.map((log) => log.user))];
+    this.actions = [...new Set(this.logs.map((log) => log.action))];
   },
 
   computed: {

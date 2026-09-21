@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { login as loginRequest } from '@/services/api';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -20,17 +21,13 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true;
       this.error = null;
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        const response = await loginRequest(credentials);
+        const token = response.token;
         const user = {
-          id: 1,
-          name: 'Sarah Collins',
-          email: credentials.email,
-          role: 'admin',
-          department: 'ICT'
+          username: response.username,
+          roles: response.roles || [],
+          role: response.roles?.[0] || 'USER'
         };
-        const token = 'mock-jwt-token';
         
         this.user = user;
         this.token = token;
@@ -42,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
         
         return { success: true };
       } catch (error) {
-        this.error = error.message || 'Login failed';
+        this.error = error.response?.data?.message || error.message || 'Login failed';
         return { success: false, error: this.error };
       } finally {
         this.loading = false;

@@ -13,10 +13,16 @@
 
         <div class="form-group">
           <label for="password">Password</label>
-          <input id="password" v-model="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+          <div class="password-input">
+            <input id="password" v-model="password" :type="passwordVisible ? 'text' : 'password'" placeholder="Enter your password" autocomplete="current-password" required />
+            <button class="password-toggle" type="button" :aria-label="passwordVisible ? 'Hide password' : 'Show password'" :title="passwordVisible ? 'Hide password' : 'Show password'" @click="passwordVisible = !passwordVisible">
+              {{ passwordVisible ? '◉' : '◌' }}
+            </button>
+          </div>
         </div>
 
         <button type="submit" class="btn-primary">Log In</button>
+        <p v-if="auth.error" class="login-error" role="alert">{{ auth.error }}</p>
       </form>
 
       <p class="login-help">Forgot your password? Contact your ICT Administrator</p>
@@ -30,16 +36,18 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/modules/auth';
 import tpaLogo from '../../assets/tpa-logo.png';
 
 const router = useRouter();
+const auth = useAuthStore();
 const username = ref('');
 const password = ref('');
+const passwordVisible = ref(false);
 
-const handleLogin = () => {
-  sessionStorage.setItem('isAuthenticated', 'true');
-  sessionStorage.setItem('user', JSON.stringify({ name: username.value, username: username.value }));
-  router.push('/');
+const handleLogin = async () => {
+  const result = await auth.login({ username: username.value, password: password.value });
+  if (result.success) router.push('/');
 };
 </script>
 
@@ -85,6 +93,11 @@ const handleLogin = () => {
 }
 
 .form-group { margin-bottom: 22px; text-align: left; }
+.login-error { color: #ba2a25; font-size: 13px; margin: 12px 0 0; }
+.password-input { position: relative; }
+.password-input input { padding-right: 44px; }
+.password-toggle { align-items: center; background: transparent; border: 0; color: #596576; cursor: pointer; display: flex; font-size: 18px; height: 100%; justify-content: center; padding: 0; position: absolute; right: 6px; top: 0; width: 34px; }
+.password-toggle:hover { color: #123f73; }
 .form-group label { display: block; color: #596576; font-size: 14px; margin-bottom: 4px; }
 .form-group input {
   width: 100%;

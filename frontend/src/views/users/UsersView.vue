@@ -3,10 +3,12 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { listUsers } from '@/services/api';
 const search = ref(''); const showForm = ref(false); const form = reactive({ name: '', email: '', role: 'Registrar', department: '' });
-const users = ref([{ name: 'Digna Andrea', email: 'digna.andrea@tpa.go.tz', role: 'Administrator', department: 'ICT', lastLogin: 'Today, 08:42' }, { name: 'J. Mushi', email: 'j.mushi@tpa.go.tz', role: 'Registrar', department: 'ICT', lastLogin: 'Today, 09:15' }, { name: 'A. Komba', email: 'a.komba@tpa.go.tz', role: 'Registrar', department: 'Operations', lastLogin: 'Yesterday' }, { name: 'F. Ngoma', email: 'f.ngoma@tpa.go.tz', role: 'Viewer', department: 'Finance', lastLogin: '01 Sep 2026' }]);
-const filteredUsers = computed(() => users.value.filter((user) => Object.values(user).some((value) => value.toLowerCase().includes(search.value.toLowerCase()))));
+const users = ref([]);
+const filteredUsers = computed(() => users.value.filter((user) => Object.values(user).some((value) => String(value ?? '').toLowerCase().includes(search.value.toLowerCase()))));
+onMounted(async () => { users.value = (await listUsers()).map((user) => ({ ...user, name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(), role: user.roles?.[0] || 'USER', department: '', lastLogin: 'Not available', status: user.enabled ? 'Active' : 'Inactive' })); });
 function addUser() { if (!form.name || !form.email) return; users.value.unshift({ ...form, lastLogin: 'Never' }); Object.assign(form, { name: '', email: '', role: 'Registrar', department: '' }); showForm.value = false; }
 </script>
 

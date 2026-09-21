@@ -27,21 +27,36 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { assetTypes, assets, departments, stations } from '@/data/assets';
+import { listAssets } from '@/services/api';
 
 const router = useRouter();
+const assets = ref([]);
+const loading = ref(true);
+const error = ref('');
 const searchQuery = ref('');
 const filters = reactive({ station: '', department: '', type: '' });
 const filteredAssets = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
-  return assets.filter((asset) => {
+  return assets.value.filter((asset) => {
     const matchesQuery = !query || [asset.serialNumber, asset.assignedUser, asset.department, asset.station, asset.type, asset.brand].some((value) => value.toLowerCase().includes(query));
     return matchesQuery && (!filters.station || asset.station === filters.station) && (!filters.department || asset.department === filters.department) && (!filters.type || asset.type === filters.type);
   });
 });
+const assetTypes = computed(() => [...new Set(assets.value.map((asset) => asset.type))].filter(Boolean).sort());
+const departments = computed(() => [...new Set(assets.value.map((asset) => asset.department))].filter(Boolean).sort());
+const stations = computed(() => [...new Set(assets.value.map((asset) => asset.station))].filter(Boolean).sort());
 const hasFilters = computed(() => Boolean(searchQuery.value || filters.station || filters.department || filters.type));
+onMounted(async () => {
+  try {
+    assets.value = (await listAssets()).data;
+  } catch (requestError) {
+    error.value = requestError.response?.data?.message || 'Unable to load assets.';
+  } finally {
+    loading.value = false;
+  }
+});
 function clearFilters() { searchQuery.value = ''; filters.station = ''; filters.department = ''; filters.type = ''; }
 function statusClass(status) { return status.toLowerCase().replaceAll(' ', '-'); }
 function registerAsset() { router.push({ name: 'AssetRegister' }); }

@@ -7,15 +7,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { listDisposalRequests } from '@/services/api';
 
-const requests = ref([
-  { serial: 'SN-TPA-00119', asset: 'HP LaserJet M404', type: 'Printer', station: 'Tanga', department: 'ICT', requestedBy: 'A. Komba', reason: 'Beyond economical repair — parts unavailable', date: '02/09/2026', status: 'Pending' },
-  { serial: 'SN-TPA-00341', asset: 'Dell OptiPlex 3090', type: 'Desktop', station: 'Mwanza', department: 'ICT', requestedBy: 'F. Ngoma', reason: 'End of life / obsolete', date: '01/09/2026', status: 'Pending' }
-]);
-const selectedRequest = ref(requests.value[0]);
+const requests = ref([]);
+const selectedRequest = ref(null);
 const message = ref('');
 const messageType = ref('success');
+onMounted(async () => {
+  const response = await listDisposalRequests();
+  requests.value = response.data.map((request) => ({ ...request, serial: `Asset ${request.assetId}`, asset: `Asset ${request.assetId}`, type: 'ICT Asset', station: '', department: '', requestedBy: `User ${request.requestedBy}`, reason: request.reason, date: request.requestDate, status: request.status }));
+  selectedRequest.value = requests.value[0] || null;
+});
 function updateRequest(status) { selectedRequest.value.status = status; messageType.value = status === 'Approved' ? 'success' : 'rejected'; message.value = `Disposal request ${status.toLowerCase()} successfully.`; }
 </script>
 

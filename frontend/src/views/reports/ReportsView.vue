@@ -3,13 +3,15 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { assets } from '@/data/assets';
+import { computed, onMounted, ref } from 'vue';
+import { listAssets, listDisposalRequests, listMaintenanceRecords } from '@/services/api';
+const assets = ref([]); const disposalRequests = ref([]); const maintenanceRecords = ref([]);
 const reportType = ref('All activity');
-const assigned = computed(() => assets.filter((asset) => asset.status === 'Assigned').length); const available = computed(() => assets.filter((asset) => asset.status === 'Available').length);
-const statusSummary = computed(() => ['Assigned', 'Available', 'Under Maintenance', 'Pending Disposal'].map((label) => ({ label, value: assets.filter((asset) => asset.status === label).length })));
-const stationSummary = computed(() => [...new Set(assets.map((asset) => asset.station))].map((label) => ({ label, value: assets.filter((asset) => asset.station === label).length })).sort((a, b) => b.value - a.value).slice(0, 5));
-const reports = [{ name: 'Asset Inventory Summary', user: 'Digna Andrea', date: '15/09/2026', records: assets.length }, { name: 'Disposal Requests Register', user: 'Digna Andrea', date: '02/09/2026', records: 2 }, { name: 'Maintenance Activity Report', user: 'J. Mushi', date: '01/09/2026', records: 3 }];
+const assigned = computed(() => assets.value.filter((asset) => asset.status === 'ASSIGNED').length); const available = computed(() => assets.value.filter((asset) => asset.status === 'AVAILABLE').length);
+const statusSummary = computed(() => ['ASSIGNED', 'AVAILABLE', 'UNDER_MAINTENANCE', 'PENDING_DISPOSAL'].map((label) => ({ label, value: assets.value.filter((asset) => asset.status === label).length })));
+const stationSummary = computed(() => [...new Set(assets.value.map((asset) => asset.station))].map((label) => ({ label, value: assets.value.filter((asset) => asset.station === label).length })).sort((a, b) => b.value - a.value).slice(0, 5));
+const reports = computed(() => [{ name: 'Asset Inventory Summary', user: 'Backend', date: new Date().toLocaleDateString(), records: assets.value.length }, { name: 'Disposal Requests Register', user: 'Backend', date: new Date().toLocaleDateString(), records: disposalRequests.value.length }, { name: 'Maintenance Activity Report', user: 'Backend', date: new Date().toLocaleDateString(), records: maintenanceRecords.value.length }]);
+onMounted(async () => { const [assetPage, disposalPage, maintenancePage] = await Promise.all([listAssets(), listDisposalRequests(), listMaintenanceRecords()]); assets.value = assetPage.data; disposalRequests.value = disposalPage.data; maintenanceRecords.value = maintenancePage.data; });
 function downloadReport() { window.print(); }
 </script>
 
