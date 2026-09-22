@@ -8,16 +8,22 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
-import { assets } from '@/data/assets';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { createAssignment, listAssignments, listAssets } from '@/services/api';
 
 const search = ref('');
 const showForm = ref(false);
 const form = reactive({ asset: '', assignee: '', department: '', date: '' });
-const assignments = ref(assets.filter((asset) => asset.status === 'Assigned').map((asset) => ({ asset: asset.serialNumber, type: asset.type, assignee: asset.assignedUser, department: asset.department, station: asset.station, date: asset.purchaseDate })));
-const availableCount = computed(() => assets.filter((asset) => asset.status === 'Available').length);
+const assets = ref([]);
+const assignments = ref([]);
+const availableCount = computed(() => assets.value.filter((asset) => asset.status === 'AVAILABLE').length);
 const filteredAssignments = computed(() => assignments.value.filter((item) => Object.values(item).some((value) => value.toLowerCase().includes(search.value.toLowerCase()))));
-function addAssignment() { if (!form.asset || !form.assignee) return; const asset = assets.find((item) => item.serialNumber === form.asset); assignments.value.unshift({ asset: form.asset, type: asset?.type || 'ICT Asset', assignee: form.assignee, department: form.department || asset?.department || 'ICT', station: asset?.station || 'Dar es Salaam', date: form.date || new Date().toISOString().slice(0, 10) }); Object.assign(form, { asset: '', assignee: '', department: '', date: '' }); showForm.value = false; }
+onMounted(async () => {
+  const [assetPage, assignmentPage] = await Promise.all([listAssets(), listAssignments()]);
+  assets.value = assetPage.data;
+  assignments.value = assignmentPage.data.map((item) => ({ ...item, asset: `Asset ${item.assetId}`, type: 'ICT Asset', assignee: `User ${item.userId}`, department: '', station: `Station ${item.stationId}`, date: item.assignedDate || '', status: item.status }));
+});
+async function addAssignment() { const asset = assets.value.find((item) => item.serialNumber === form.asset); if (!asset || !Number(form.assignee)) return; await createAssignment({ assetId: asset.id, userId: Number(form.assignee), stationId: Number(asset.stationId) }); const response = await listAssignments(); assignments.value = response.data.map((item) => ({ ...item, asset: `Asset ${item.assetId}`, type: 'ICT Asset', assignee: `User ${item.userId}`, department: '', station: `Station ${item.stationId}`, date: item.assignedDate || '', status: item.status })); Object.assign(form, { asset: '', assignee: '', department: '', date: '' }); showForm.value = false; }
 </script>
 
 <style scoped>

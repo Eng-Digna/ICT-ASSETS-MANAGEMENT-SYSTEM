@@ -3,12 +3,17 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
-import { assets } from '@/data/assets';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { createMaintenanceRecord, listAssets, listMaintenanceRecords } from '@/services/api';
 const showForm = ref(false); const filter = ref(''); const form = reactive({ asset: '', issue: '', dueDate: '', technician: '' });
-const records = ref([{ asset: 'SN-TPA-00256', issue: 'Keyboard replacement', technician: 'ICT Workshop', dueDate: '18/09/2026', status: 'In Progress' }, { asset: 'SN-TPA-00335', issue: 'Projector lamp replacement', technician: 'TechServe Ltd.', dueDate: '22/09/2026', status: 'Scheduled' }, { asset: 'SN-TPA-00204', issue: 'Preventive inspection', technician: 'ICT Workshop', dueDate: '05/09/2026', status: 'Completed' }]);
+const assets = ref([]); const records = ref([]);
 const filteredRecords = computed(() => records.value.filter((record) => !filter.value || record.status === filter.value));
-function addRecord() { if (!form.asset || !form.issue) return; records.value.unshift({ ...form, dueDate: form.dueDate || 'Not scheduled', technician: form.technician || 'ICT Workshop', status: 'Scheduled' }); Object.assign(form, { asset: '', issue: '', dueDate: '', technician: '' }); showForm.value = false; }
+onMounted(async () => {
+  const [assetPage, recordPage] = await Promise.all([listAssets(), listMaintenanceRecords()]);
+  assets.value = assetPage.data;
+  records.value = recordPage.data.map((record) => ({ ...record, asset: `Asset ${record.assetId}`, issue: record.description, technician: `User ${record.loggedBy}`, dueDate: record.serviceDate, status: record.status || 'Completed' }));
+});
+async function addRecord() { const asset = assets.value.find((item) => item.serialNumber === form.asset); if (!asset || !form.issue) return; await createMaintenanceRecord({ assetId: asset.id, serviceDate: form.dueDate || new Date().toISOString().slice(0, 10), description: form.issue }); const response = await listMaintenanceRecords(); records.value = response.data.map((record) => ({ ...record, asset: `Asset ${record.assetId}`, issue: record.description, technician: `User ${record.loggedBy}`, dueDate: record.serviceDate, status: record.status || 'Completed' })); Object.assign(form, { asset: '', issue: '', dueDate: '', technician: '' }); showForm.value = false; }
 </script>
 
 <style scoped>

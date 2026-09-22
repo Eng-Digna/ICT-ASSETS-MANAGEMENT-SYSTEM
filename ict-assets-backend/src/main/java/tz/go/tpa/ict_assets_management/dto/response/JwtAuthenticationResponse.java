@@ -3,6 +3,7 @@ package tz.go.tpa.ict_assets_management.dto.response;
 import java.util.List;
 
 public class JwtAuthenticationResponse {
+    private Long userId;
     private String token;
     private String type = "Bearer";
     private String username;
@@ -15,6 +16,21 @@ public class JwtAuthenticationResponse {
         this.token = token;
         this.username = username;
         this.roles = roles;
+    }
+
+    public JwtAuthenticationResponse(Long userId, String token, String username, List<String> roles) {
+        this.userId = userId;
+        this.token = token;
+        this.username = username;
+        this.roles = roles;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getToken() {

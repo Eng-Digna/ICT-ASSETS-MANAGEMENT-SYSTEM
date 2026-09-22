@@ -8,12 +8,6 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
-    path: '/register',
-    name: 'Register',
-    component: () => import('@/views/auth/RegisterView.vue'),
-    meta: { requiresGuest: true }
-  },
-  {
     path: '/',
     component: () => import('@/components/layout/AppLayout.vue'),
     meta: { requiresAuth: true },
@@ -31,6 +25,11 @@ const routes = [
       {
         path: 'assets/register',
         name: 'AssetRegister',
+        component: () => import('@/views/assets/AssetDetailView.vue')
+      },
+      {
+        path: 'assets/new',
+        name: 'AssetRegisterNew',
         component: () => import('@/views/assets/AssetDetailView.vue')
       },
       {
@@ -83,7 +82,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const isAuthenticated = Boolean(localStorage.getItem('token')) && localStorage.getItem('isAuthenticated') === 'true';
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'Login', query: { redirect: to.fullPath } });

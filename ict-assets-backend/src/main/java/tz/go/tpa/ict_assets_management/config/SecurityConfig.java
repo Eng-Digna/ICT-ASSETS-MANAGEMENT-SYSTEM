@@ -55,9 +55,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
+            // ─────────── ADDED: allow H2 console iframe ───────────
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+            // ───────────────────────────────────────────────────────
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register").permitAll()
+                // ─────────── ADDED: permit H2 console ───────────
+                .requestMatchers("/h2-console/**").permitAll()
+                // ─────────────────────────────────────────────────
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ADMINISTRATOR")
                 .anyRequest().authenticated()

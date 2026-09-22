@@ -26,29 +26,40 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { assets, departments, saveAssetRecord, stations, validateAssetRecord } from '@/data/assets';
+import { createAsset, getAsset, updateAsset } from '@/services/api';
 
 const router = useRouter();
-const isNew = computed(() => route.name === 'AssetRegister' || route.params.id === 'new');
-const source = assets.find((item) => item.id === route.params.id) || { id: '', serialNumber: '', type: '', macAddress: '', brand: '', model: '', operatingSystem: '', department: '', station: '', warrantyStartDate: '', warrantyEndDate: '', status: 'Available' };
-const asset = source;
-const record = reactive({ ...source });
+const route = useRoute();
+const isNew = computed(() => route.name === 'AssetRegister' || route.name === 'AssetRegisterNew' || route.params.id === 'new');
+const asset = reactive({ id: '', serialNumber: '', type: '', macAddress: '', brand: '', model: '', operatingSystem: '', department: '', station: '', warrantyStartDate: '', warrantyEndDate: '', status: 'Available' });
+const record = reactive({ ...asset });
+const departments = computed(() => record.department ? [record.department] : []);
+const stations = computed(() => record.station ? [record.station] : []);
 const errors = ref({});
 const serverError = ref('');
-function statusClass(status) { return status.toLowerCase().replaceAll(' ', '-'); }
-function saveRecord() {
-  errors.value = validateAssetRecord(record);
-  serverError.value = '';
-  if (Object.keys(errors.value).length) return;
-  const result = saveAssetRecord(record);
-  if (!result.success) {
-    errors.value = result.errors;
-    serverError.value = 'The server rejected this asset. Please correct the highlighted fields.';
-    return;
+onMounted(async () => {
+  if (!isNew.value) {
+    try {
+      Object.assign(asset, await getAsset(route.params.id));
+      Object.assign(record, asset);
+    } catch (error) {
+      serverError.value = error.response?.data?.message || 'Unable to load this asset.';
+    }
   }
-  router.push({ name: 'Assets' });
+});
+function statusClass(status) { return status.toLowerCase().replaceAll(' ', '-'); }
+async function saveRecord() {
+  errors.value = {};
+  serverError.value = '';
+  try {
+    const saved = isNew.value ? await createAsset(record) : await updateAsset(route.params.id, record);
+    Object.assign(asset, saved);
+    router.push({ name: 'Assets' });
+  } catch (error) {
+    serverError.value = error.response?.data?.message || 'The server rejected this asset. Please correct the highlighted fields.';
+  }
 }
 </script>
 
