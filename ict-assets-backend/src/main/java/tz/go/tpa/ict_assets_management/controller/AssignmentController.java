@@ -17,8 +17,8 @@ public class AssignmentController {
     @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
     public ResponseEntity<AssignmentResponse> assignAsset(@Valid @RequestBody AssignAssetRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(assignmentService.assignAsset(request)); }
     @GetMapping
-    public ResponseEntity<PageResponse<AssignmentResponse>> listAssignments(@RequestParam(required = false) Long assetId, @RequestParam(required = false) Long userId, @RequestParam(required = false) String status, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int pageSize) {
-        AssignmentSearchFilter filter = new AssignmentSearchFilter(); filter.setAssetId(assetId); filter.setUserId(userId); filter.setStatus(status); filter.setPage(page); filter.setPageSize(pageSize);
+    public ResponseEntity<PageResponse<AssignmentResponse>> listAssignments(@RequestParam(required = false) Long assetId, @RequestParam(required = false) String assigneeName, @RequestParam(required = false) String status, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int pageSize) {
+        AssignmentSearchFilter filter = new AssignmentSearchFilter(); filter.setAssetId(assetId); filter.setAssigneeName(assigneeName); filter.setStatus(status); filter.setPage(page); filter.setPageSize(pageSize);
         return ResponseEntity.ok(assignmentService.listAssignments(filter));
     }
     @GetMapping("/{id}")

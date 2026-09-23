@@ -20,6 +20,7 @@ import tz.go.tpa.ict_assets_management.dto.request.UpdateUserRequest;
 import tz.go.tpa.ict_assets_management.dto.response.ApiResponse;
 import tz.go.tpa.ict_assets_management.dto.response.UserResponse;
 import tz.go.tpa.ict_assets_management.entity.Role;
+import tz.go.tpa.ict_assets_management.entity.User;
 import tz.go.tpa.ict_assets_management.service.UserService;
 
 import java.util.List;
@@ -42,13 +43,13 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsers(Pageable pageable) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Users retrieved successfully", userService.getUsers(pageable), "/api/v1/users"));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(new ApiResponse<>(true, "User retrieved successfully", userService.getUserById(id), "/api/v1/users/" + id));
     }
@@ -72,6 +73,12 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponse<>(true, "User status updated successfully", userService.toggleStatus(id, enabled), "/api/v1/users/" + id + "/status"));
     }
 
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<UserResponse>> changeOwnPassword(@Valid @RequestBody ChangePasswordRequest request) {
+        User current = tz.go.tpa.ict_assets_management.util.CurrentUser.required();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Password changed successfully", userService.changePassword(current.getId(), request), "/api/v1/users/change-password"));
+    }
+
     @PutMapping("/{id}/change-password")
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<UserResponse>> changePassword(@PathVariable Long id, @Valid @RequestBody ChangePasswordRequest request) {
@@ -79,7 +86,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/roles")
-    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<ApiResponse<List<Role>>> getUserRoles(@PathVariable Long id) {
         return ResponseEntity.ok(new ApiResponse<>(true, "User roles retrieved successfully", userService.getUserRoles(id), "/api/v1/users/" + id + "/roles"));
     }

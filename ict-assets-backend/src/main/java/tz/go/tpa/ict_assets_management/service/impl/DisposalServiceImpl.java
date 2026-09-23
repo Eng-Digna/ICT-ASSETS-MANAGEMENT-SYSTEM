@@ -88,9 +88,33 @@ public class DisposalServiceImpl implements DisposalService {
 
     private DisposalRequestResponse toResponse(DisposalRequest d) {
         DisposalRequestResponse response = new DisposalRequestResponse();
-        response.setId(d.getId()); response.setAssetId(d.getAsset().getId()); response.setRequestedBy(d.getRequestedBy().getId());
-        response.setRequestDate(d.getRequestDate()); response.setStatus(d.getStatus().name()); response.setReason(d.getReason());
-        if (d.getApprovedBy() != null) response.setApprovedBy(d.getApprovedBy().getId());
+        response.setId(d.getId());
+        response.setAssetId(d.getAsset().getId());
+        if (d.getAsset() != null) {
+            response.setAssetSerialNumber(d.getAsset().getSerialNumber());
+            response.setAssetType(d.getAsset().getAssetType() != null ? d.getAsset().getAssetType().name() : null);
+            if (d.getAsset().getDepartment() != null) {
+                response.setDepartmentName(d.getAsset().getDepartment().getName());
+            }
+            if (d.getAsset().getStation() != null) {
+                response.setStationName(d.getAsset().getStation().getName());
+            }
+        }
+        response.setRequestedBy(d.getRequestedBy().getId());
+        if (d.getRequestedBy() != null) {
+            String name = ((d.getRequestedBy().getFirstName() != null ? d.getRequestedBy().getFirstName() : "") + " " +
+                    (d.getRequestedBy().getLastName() != null ? d.getRequestedBy().getLastName() : "")).trim();
+            response.setRequestedByName(!name.isEmpty() ? name : d.getRequestedBy().getUsername());
+        }
+        response.setRequestDate(d.getRequestDate());
+        response.setStatus(d.getStatus().name());
+        response.setReason(d.getReason());
+        if (d.getApprovedBy() != null) {
+            response.setApprovedBy(d.getApprovedBy().getId());
+            String appName = ((d.getApprovedBy().getFirstName() != null ? d.getApprovedBy().getFirstName() : "") + " " +
+                    (d.getApprovedBy().getLastName() != null ? d.getApprovedBy().getLastName() : "")).trim();
+            response.setApprovedByName(!appName.isEmpty() ? appName : d.getApprovedBy().getUsername());
+        }
         response.setApprovalDate(d.getApprovalDate());
         return response;
     }

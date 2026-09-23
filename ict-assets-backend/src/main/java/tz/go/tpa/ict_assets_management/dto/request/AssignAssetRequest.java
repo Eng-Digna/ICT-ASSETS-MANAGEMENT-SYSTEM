@@ -4,12 +4,12 @@ import jakarta.validation.constraints.NotNull;
 
 public class AssignAssetRequest {
     @NotNull private Long assetId;
-    @NotNull private Long userId;
+    @NotNull private String assigneeName;
     @NotNull private Long stationId;
     public Long getAssetId() { return assetId; }
     public void setAssetId(Long assetId) { this.assetId = assetId; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getAssigneeName() { return assigneeName; }
+    public void setAssigneeName(String assigneeName) { this.assigneeName = assigneeName; }
     public Long getStationId() { return stationId; }
     public void setStationId(Long stationId) { this.stationId = stationId; }
 }

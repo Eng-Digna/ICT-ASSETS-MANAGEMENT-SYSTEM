@@ -8,12 +8,6 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
-    path: '/register',
-    name: 'Register',
-    component: () => import('@/views/auth/RegisterView.vue'),
-    meta: { requiresGuest: true }
-  },
-  {
     path: '/',
     component: () => import('@/components/layout/AppLayout.vue'),
     meta: { requiresAuth: true },
@@ -30,6 +24,7 @@ const routes = [
       },
       {
         path: 'assets/register',
+        alias: ['/assets/new'],
         name: 'AssetRegister',
         component: () => import('@/views/assets/AssetDetailView.vue')
       },
@@ -41,7 +36,8 @@ const routes = [
       {
         path: 'users',
         name: 'Users',
-        component: () => import('@/views/users/UsersView.vue')
+        component: () => import('@/views/users/UsersView.vue'),
+        meta: { requiresAuth: true, role: 'ADMINISTRATOR' }
       },
       {
         path: 'assignments',
@@ -51,7 +47,8 @@ const routes = [
       {
         path: 'audit',
         name: 'AuditLogs',
-        component: () => import('@/views/audit/AuditLogsView.vue')
+        component: () => import('@/views/audit/AuditLogsView.vue'),
+        meta: { requiresAuth: true, role: 'ADMINISTRATOR' }
       },
       {
         path: 'disposal',
@@ -59,7 +56,8 @@ const routes = [
         component: () => import('@/views/disposal/DisposalConfirmationView.vue')
       },
       {
-        path: 'settings',
+        path: 'maintenance',
+        alias: ['/settings'],
         name: 'Maintenance',
         component: () => import('@/views/maintenance/MaintenanceView.vue')
       },
@@ -83,7 +81,8 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const token = localStorage.getItem('token');
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true' && !!token;
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'Login', query: { redirect: to.fullPath } });
@@ -93,6 +92,15 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresGuest && isAuthenticated) {
     next({ name: 'Dashboard' });
     return;
+  }
+
+  if (to.meta.role) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const roles = user.roles || [];
+    if (!roles.includes(to.meta.role)) {
+      next({ name: 'Dashboard' });
+      return;
+    }
   }
   
   next();

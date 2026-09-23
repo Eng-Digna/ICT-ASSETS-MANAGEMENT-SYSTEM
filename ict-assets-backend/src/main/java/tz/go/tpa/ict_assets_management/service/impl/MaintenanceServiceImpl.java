@@ -92,9 +92,20 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         MaintenanceRecordResponse response = new MaintenanceRecordResponse();
         response.setId(record.getId());
         response.setAssetId(record.getAsset().getId());
+        if (record.getAsset() != null) {
+            response.setAssetSerialNumber(record.getAsset().getSerialNumber());
+            response.setBrand(record.getAsset().getBrand());
+            response.setModel(record.getAsset().getModel());
+            response.setAssetStatus(record.getAsset().getStatus() != null ? record.getAsset().getStatus().name() : null);
+        }
         response.setServiceDate(record.getServiceDate());
         response.setDescription(record.getDescription());
         response.setLoggedBy(record.getLoggedBy().getId());
+        if (record.getLoggedBy() != null) {
+            String name = ((record.getLoggedBy().getFirstName() != null ? record.getLoggedBy().getFirstName() : "") + " " +
+                    (record.getLoggedBy().getLastName() != null ? record.getLoggedBy().getLastName() : "")).trim();
+            response.setLoggedByName(!name.isEmpty() ? name : record.getLoggedBy().getUsername());
+        }
         return response;
     }
 }

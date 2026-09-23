@@ -1,50 +1,164 @@
 <template>
   <section class="assets-page">
     <header class="page-heading">
-      <div><p class="eyebrow">ICT asset register</p><h1>Asset Directory</h1><p class="subtitle">Search and filter all registered ICT assets across TPA.</p></div>
+      <div>
+        <p class="eyebrow">ICT asset register</p>
+        <h1>Asset Directory</h1>
+        <p class="subtitle">Search and filter all registered ICT assets across TPA.</p>
+      </div>
       <button class="primary-button" type="button" @click="registerAsset">+ Register Asset</button>
     </header>
+
     <div class="directory-card">
       <div class="filter-bar">
-        <label class="search-field"><span class="sr-only">Search assets</span><input v-model="searchQuery" type="search" placeholder="Search by serial number, user, or asset type" /></label>
-        <label><span class="sr-only">Filter by station</span><select v-model="filters.station"><option value="">All Stations</option><option v-for="station in stations" :key="station" :value="station">{{ station }}</option></select></label>
-        <label><span class="sr-only">Filter by department</span><select v-model="filters.department"><option value="">All Departments</option><option v-for="department in departments" :key="department" :value="department">{{ department }}</option></select></label>
-        <label><span class="sr-only">Filter by asset type</span><select v-model="filters.type"><option value="">All Asset Types</option><option v-for="type in assetTypes" :key="type" :value="type">{{ type }}</option></select></label>
+        <label class="search-field">
+          <span class="sr-only">Search assets</span>
+          <input v-model="searchQuery" type="search" placeholder="Search by serial number, brand, or model..." />
+        </label>
+        <label>
+          <span class="sr-only">Filter by station</span>
+          <select v-model="filters.station">
+            <option value="">All Stations</option>
+            <option v-for="stn in stations" :key="stn.id || stn" :value="stn.name || stn">{{ stn.name || stn }}</option>
+          </select>
+        </label>
+        <label>
+          <span class="sr-only">Filter by department</span>
+          <select v-model="filters.department">
+            <option value="">All Departments</option>
+            <option v-for="dept in departments" :key="dept.id || dept" :value="dept.name || dept">{{ dept.name || dept }}</option>
+          </select>
+        </label>
+        <label>
+          <span class="sr-only">Filter by asset type</span>
+          <select v-model="filters.type">
+            <option value="">All Asset Types</option>
+            <option v-for="type in assetTypes" :key="type" :value="type">{{ type }}</option>
+          </select>
+        </label>
         <button v-if="hasFilters" class="clear-button" type="button" @click="clearFilters">Clear</button>
       </div>
+
       <div class="table-wrap">
         <table class="asset-table">
-          <thead><tr><th>Serial No.</th><th>Type</th><th>Brand / Model</th><th>Assigned User</th><th>Department</th><th>Station</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <thead>
+            <tr>
+              <th>Serial No.</th>
+              <th>Type</th>
+              <th>Brand / Model</th>
+              <th>Department</th>
+              <th>Station</th>
+              <th>Status</th>
+              <th><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
           <tbody>
-            <tr v-for="asset in filteredAssets" :key="asset.id"><td><strong>{{ asset.serialNumber }}</strong></td><td>{{ asset.type }}</td><td>{{ asset.brand }}</td><td>{{ asset.assignedUser }}</td><td>{{ asset.department }}</td><td>{{ asset.station }}</td><td><span class="status" :class="statusClass(asset.status)">{{ asset.status }}</span></td><td><RouterLink class="view-link" :to="{ name: 'AssetDetail', params: { id: asset.id } }">View</RouterLink></td></tr>
-            <tr v-if="filteredAssets.length === 0"><td colspan="8" class="empty-state">No assets match the current search and filters.</td></tr>
+            <tr v-for="asset in filteredAssets" :key="asset.id">
+              <td><strong>{{ asset.serialNumber }}</strong></td>
+              <td>{{ asset.type || asset.assetType }}</td>
+              <td>{{ asset.brand }} {{ asset.model ? '— ' + asset.model : '' }}</td>
+              <td>{{ asset.department || '—' }}</td>
+              <td>{{ asset.station || '—' }}</td>
+              <td>
+                <span class="status" :class="statusClass(asset.status)">
+                  {{ formatStatus(asset.status) }}
+                </span>
+              </td>
+              <td>
+                <RouterLink class="view-link" :to="{ name: 'AssetDetail', params: { id: asset.id } }">
+                  View
+                </RouterLink>
+              </td>
+            </tr>
+            <tr v-if="filteredAssets.length === 0">
+              <td colspan="7" class="empty-state">No assets match the current search and filters.</td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <footer class="table-footer"><span>Showing {{ filteredAssets.length }} of {{ assets.length }} assets</span><span class="directory-note">Select View to open the full asset record.</span></footer>
+      <footer class="table-footer">
+        <span>Showing {{ filteredAssets.length }} of {{ assets.length }} assets</span>
+        <span class="directory-note">Select View to inspect or edit the asset record.</span>
+      </footer>
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { assetTypes, assets, departments, stations } from '@/data/assets';
+import { api } from '../../services/api';
 
 const router = useRouter();
+const assets = ref([]);
+const departments = ref([]);
+const stations = ref([]);
+
+const defaultTypes = ['DESKTOP', 'LAPTOP', 'PRINTER', 'SCANNER'];
+const assetTypes = computed(() => {
+  const dynamic = assets.value.map(a => a.type || a.assetType).filter(Boolean);
+  return [...new Set([...defaultTypes, ...dynamic])];
+});
+
 const searchQuery = ref('');
 const filters = reactive({ station: '', department: '', type: '' });
+
 const filteredAssets = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
-  return assets.filter((asset) => {
-    const matchesQuery = !query || [asset.serialNumber, asset.assignedUser, asset.department, asset.station, asset.type, asset.brand].some((value) => value.toLowerCase().includes(query));
-    return matchesQuery && (!filters.station || asset.station === filters.station) && (!filters.department || asset.department === filters.department) && (!filters.type || asset.type === filters.type);
+  return assets.value.filter((asset) => {
+    const typeStr = (asset.type || asset.assetType || '').toLowerCase();
+    const brandStr = (asset.brand || '').toLowerCase();
+    const modelStr = (asset.model || '').toLowerCase();
+    const serialStr = (asset.serialNumber || '').toLowerCase();
+    const deptStr = (asset.department || '').toLowerCase();
+    const stnStr = (asset.station || '').toLowerCase();
+
+    const matchesQuery = !query || [serialStr, typeStr, brandStr, modelStr, deptStr, stnStr].some(val => val.includes(query));
+    const matchesStation = !filters.station || (asset.station === filters.station);
+    const matchesDepartment = !filters.department || (asset.department === filters.department);
+    const matchesType = !filters.type || (asset.type === filters.type || asset.assetType === filters.type);
+
+    return matchesQuery && matchesStation && matchesDepartment && matchesType;
   });
 });
+
 const hasFilters = computed(() => Boolean(searchQuery.value || filters.station || filters.department || filters.type));
-function clearFilters() { searchQuery.value = ''; filters.station = ''; filters.department = ''; filters.type = ''; }
-function statusClass(status) { return status.toLowerCase().replaceAll(' ', '-'); }
-function registerAsset() { router.push({ name: 'AssetRegister' }); }
+
+function clearFilters() {
+  searchQuery.value = '';
+  filters.station = '';
+  filters.department = '';
+  filters.type = '';
+}
+
+function statusClass(status) {
+  return (status || '').toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
+}
+
+function formatStatus(status) {
+  if (!status) return '—';
+  return status.replaceAll('_', ' ');
+}
+
+function registerAsset() {
+  router.push({ name: 'AssetRegister' });
+}
+
+onMounted(async () => {
+  try {
+    const [page, depts, stns] = await Promise.all([
+      api('/assets'),
+      api('/departments').catch(() => []),
+      api('/stations').catch(() => [])
+    ]);
+    assets.value = Array.isArray(page) ? page : (page.content || []);
+    departments.value = Array.isArray(depts) ? depts : (Array.isArray(depts) ? depts : (depts.content || []));
+    stations.value = Array.isArray(stns) ? stns : (Array.isArray(stns) ? stns : (stns.content || []));
+  } catch (err) {
+    console.error('Failed to load asset directory', err);
+    assets.value = [];
+  }
+});
 </script>
 
 <style scoped>
@@ -69,9 +183,10 @@ h1 { color: #1D2939; font-size: 24px; margin: 0; }
 .asset-table td { border-bottom: 1px solid #E9EDF2; color: #3F4854; font-size: 13px; padding: 10px; white-space: nowrap; }
 .asset-table td strong { color: #344054; font-weight: 500; }
 .asset-table tr:last-child td { border-bottom: 0; }
-.status { border-radius: 999px; display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; }
-.assigned, .available { background: #D9F5E5; color: #16834D; }
-.pending-disposal { background: #FFF0C7; color: #B66A00; }
+.status { border-radius: 999px; display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; text-transform: capitalize; }
+.registered, .available { background: #D9F5E5; color: #16834D; }
+.assigned { background: #E6F4FB; color: #2674A8; }
+.disposal-requested, .pending-disposal { background: #FFF0C7; color: #B66A00; }
 .disposed { background: #FDE0DE; color: #C9362B; }
 .under-maintenance { background: #DCEEFE; color: #2674A8; }
 .view-link { color: #344054; text-decoration: none; }

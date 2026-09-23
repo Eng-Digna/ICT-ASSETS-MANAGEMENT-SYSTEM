@@ -21,14 +21,12 @@ import java.util.List;
 public class AssignmentServiceImpl implements AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final AssetService assetService;
-    private final UserRepository userRepository;
     private final StationRepository stationRepository;
 
     public AssignmentServiceImpl(AssignmentRepository assignmentRepository, AssetService assetService,
-                                  UserRepository userRepository, StationRepository stationRepository) {
+                                  StationRepository stationRepository) {
         this.assignmentRepository = assignmentRepository;
         this.assetService = assetService;
-        this.userRepository = userRepository;
         this.stationRepository = stationRepository;
     }
 
@@ -39,10 +37,10 @@ public class AssignmentServiceImpl implements AssignmentService {
                 || assignmentRepository.existsByAssetIdAndStatus(asset.getId(), AssignmentStatus.ACTIVE)) {
             throw new DuplicateResourceException("Asset is not available for assignment");
         }
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new ResourceNotFoundException("No user with ID " + request.getUserId()));
+        String assigneeName = request.getAssigneeName();
         Station station = stationRepository.findById(request.getStationId()).orElseThrow(() -> new ResourceNotFoundException("No station with ID " + request.getStationId()));
         Assignment assignment = new Assignment();
-        assignment.setAsset(asset); assignment.setUser(user); assignment.setStation(station);
+        assignment.setAsset(asset); assignment.setAssigneeName(assigneeName); assignment.setStation(station);
         assignment.setAssignedDate(LocalDate.now()); assignment.setStatus(AssignmentStatus.ACTIVE);
         assetService.updateAssetStatus(asset.getId(), AssetStatus.ASSIGNED);
         return toResponse(assignmentRepository.save(assignment));
@@ -53,7 +51,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         Specification<Assignment> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (filter.getAssetId() != null) predicates.add(cb.equal(root.get("asset").get("id"), filter.getAssetId()));
-            if (filter.getUserId() != null) predicates.add(cb.equal(root.get("user").get("id"), filter.getUserId()));
+            if (filter.getAssigneeName() != null && !filter.getAssigneeName().isEmpty()) predicates.add(cb.like(cb.lower(root.get("assigneeName")), "%" + filter.getAssigneeName().toLowerCase() + "%"));
             if (filter.getStatus() != null) predicates.add(cb.equal(root.get("status"), AssignmentStatus.valueOf(filter.getStatus().toUpperCase())));
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -73,7 +71,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             assetService.updateAssetStatus(assignment.getAsset().getId(), AssetStatus.REGISTERED);
         } else if ("transfer".equalsIgnoreCase(request.getAction())) {
             if (assignment.getStatus() != AssignmentStatus.ACTIVE) throw new IllegalStateException("Cannot transfer a returned assignment");
-            if (request.getNewUserId() != null) assignment.setUser(userRepository.findById(request.getNewUserId()).orElseThrow(() -> new ResourceNotFoundException("No user with ID " + request.getNewUserId())));
+            if (request.getAssigneeName() != null && !request.getAssigneeName().trim().isEmpty()) assignment.setAssigneeName(request.getAssigneeName().trim());
             if (request.getNewStationId() != null) assignment.setStation(stationRepository.findById(request.getNewStationId()).orElseThrow(() -> new ResourceNotFoundException("No station with ID " + request.getNewStationId())));
         } else throw new IllegalArgumentException("Invalid action value: " + request.getAction());
         return toResponse(assignmentRepository.save(assignment));
@@ -82,8 +80,23 @@ public class AssignmentServiceImpl implements AssignmentService {
     private Assignment getAssignmentOrThrow(Long id) { return assignmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No assignment with ID " + id)); }
     private AssignmentResponse toResponse(Assignment a) {
         AssignmentResponse r = new AssignmentResponse();
-        r.setId(a.getId()); r.setAssetId(a.getAsset().getId()); r.setUserId(a.getUser().getId()); r.setStationId(a.getStation().getId());
-        r.setAssignedDate(a.getAssignedDate()); r.setReturnedDate(a.getReturnedDate()); r.setStatus(a.getStatus().name());
+        r.setId(a.getId());
+        r.setAssetId(a.getAsset().getId());
+        if (a.getAsset() != null) {
+            r.setAssetSerialNumber(a.getAsset().getSerialNumber());
+            r.setAssetType(a.getAsset().getAssetType() != null ? a.getAsset().getAssetType().name() : null);
+            if (a.getAsset().getDepartment() != null) {
+                r.setDepartmentName(a.getAsset().getDepartment().getName());
+            }
+        }
+        r.setAssigneeName(a.getAssigneeName());
+        r.setStationId(a.getStation().getId());
+        if (a.getStation() != null) {
+            r.setStationName(a.getStation().getName());
+        }
+        r.setAssignedDate(a.getAssignedDate());
+        r.setReturnedDate(a.getReturnedDate());
+        r.setStatus(a.getStatus().name());
         return r;
     }
 }

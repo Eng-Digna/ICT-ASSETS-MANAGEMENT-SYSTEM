@@ -19,7 +19,7 @@ public class DashboardController {
     }
 
     @GetMapping("/overview")
-    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @PreAuthorize("hasRole('ADMINISTRATOR') or hasRole('REGISTRAR')")
     public ResponseEntity<ApiResponse<DashboardOverviewResponse>> overview() {
         return ResponseEntity.ok(new ApiResponse<>(true, "Dashboard overview retrieved",
                 dashboardService.getOverview(), "/api/v1/dashboard/overview"));

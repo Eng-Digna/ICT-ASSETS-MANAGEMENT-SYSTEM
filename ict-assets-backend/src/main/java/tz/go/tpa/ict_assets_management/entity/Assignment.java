@@ -15,9 +15,8 @@ public class Assignment {
     @JoinColumn(name = "asset_id", nullable = false)
     private Asset asset;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "assignee_name", nullable = false)
+    private String assigneeName;
 
     @ManyToOne
     @JoinColumn(name = "station_id", nullable = false)
@@ -38,8 +37,8 @@ public class Assignment {
     public void setId(Long id) { this.id = id; }
     public Asset getAsset() { return asset; }
     public void setAsset(Asset asset) { this.asset = asset; }
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public String getAssigneeName() { return assigneeName; }
+    public void setAssigneeName(String assigneeName) { this.assigneeName = assigneeName; }
     public Station getStation() { return station; }
     public void setStation(Station station) { this.station = station; }
     public LocalDate getAssignedDate() { return assignedDate; }

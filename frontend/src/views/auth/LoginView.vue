@@ -20,7 +20,6 @@
       </form>
 
       <p class="login-help">Forgot your password? Contact your ICT Administrator</p>
-      <p class="login-help">Do you have an account? <router-link to="/register">Register here</router-link></p>
       <div class="login-divider"></div>
       <p class="login-notice">Access restricted to authorised TPA ICT users</p>
     </div>
@@ -30,16 +29,23 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../store/modules/auth';
 import tpaLogo from '../../assets/tpa-logo.png';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const username = ref('');
 const password = ref('');
+const loginError = ref('');
 
-const handleLogin = () => {
-  localStorage.setItem('isAuthenticated', 'true');
-  localStorage.setItem('user', JSON.stringify({ name: username.value, username: username.value }));
-  router.push('/');
+const handleLogin = async () => {
+  loginError.value = '';
+  const result = await authStore.login({ username: username.value, password: password.value });
+  if (result.success) {
+    router.push('/');
+  } else {
+    loginError.value = result.error || 'Invalid credentials. Please try again.';
+  }
 };
 </script>
 

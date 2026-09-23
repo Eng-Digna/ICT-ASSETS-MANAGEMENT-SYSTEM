@@ -5,6 +5,8 @@ import java.time.LocalDate;
 public class AssetResponse {
     private Long id;
     private String assetType;
+    /** Frontend-facing alias for assetType. */
+    private String type;
     private String serialNumber;
     private String macAddress;
     private String brand;
@@ -15,6 +17,8 @@ public class AssetResponse {
     private String status;
     private Long departmentId;
     private Long stationId;
+    private String department;
+    private String station;
 
     // getters/setters
     public Long getId() {
@@ -32,6 +36,8 @@ public class AssetResponse {
     public void setAssetType(String assetType) {
         this.assetType = assetType;
     }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
     public String getSerialNumber() {
         return serialNumber;
@@ -112,4 +118,8 @@ public class AssetResponse {
     public void setStationId(Long stationId) {
         this.stationId = stationId;
     }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+    public String getStation() { return station; }
+    public void setStation(String station) { this.station = station; }
 }

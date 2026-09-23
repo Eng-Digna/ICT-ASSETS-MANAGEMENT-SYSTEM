@@ -3,6 +3,7 @@ package tz.go.tpa.ict_assets_management.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import tz.go.tpa.ict_assets_management.entity.RoleName;
 
 public class CreateUserRequest {
     @NotBlank(message = "Username is required")
@@ -24,6 +25,7 @@ public class CreateUserRequest {
     private String password;
 
     private boolean enabled = true;
+    private RoleName role = RoleName.REGISTRAR;
 
     public String getUsername() {
         return username;
@@ -72,4 +74,7 @@ public class CreateUserRequest {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
+    public RoleName getRole() { return role; }
+    public void setRole(RoleName role) { this.role = role; }
 }

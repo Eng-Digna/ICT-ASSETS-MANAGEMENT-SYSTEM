@@ -124,6 +124,7 @@ public class AssetServiceImpl implements AssetService {
         AssetResponse r = new AssetResponse();
         r.setId(asset.getId());
         r.setAssetType(asset.getAssetType().name());
+        r.setType(asset.getAssetType().name());
         r.setSerialNumber(asset.getSerialNumber());
         r.setMacAddress(asset.getMacAddress());
         r.setBrand(asset.getBrand());
@@ -134,6 +135,8 @@ public class AssetServiceImpl implements AssetService {
         r.setStatus(asset.getStatus().name());
         r.setDepartmentId(asset.getDepartment().getId());
         r.setStationId(asset.getStation().getId());
+        r.setDepartment(asset.getDepartment().getName());
+        r.setStation(asset.getStation().getName());
         return r;
     }
 }

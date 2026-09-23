@@ -1,18 +1,19 @@
 import { defineStore } from 'pinia';
+import { api } from '../../services/api';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     token: localStorage.getItem('token'),
-    isAuthenticated: false,
+    isAuthenticated: localStorage.getItem('isAuthenticated') === 'true',
     loading: false,
     error: null
   }),
 
   getters: {
     isLoggedIn: (state) => state.isAuthenticated && !!state.token,
-    userName: (state) => state.user?.name || 'Guest',
-    userRole: (state) => state.user?.role || 'user'
+    userName: (state) => state.user?.username || 'Guest',
+    userRole: (state) => state.user?.roles?.[0] || ''
   },
 
   actions: {
@@ -20,17 +21,9 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true;
       this.error = null;
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const user = {
-          id: 1,
-          name: 'Sarah Collins',
-          email: credentials.email,
-          role: 'admin',
-          department: 'ICT'
-        };
-        const token = 'mock-jwt-token';
+        const result = await api('/auth/login', { method: 'POST', body: JSON.stringify({ username: credentials.username, password: credentials.password }) });
+        const user = { username: result.username, roles: result.roles || [] };
+        const token = result.token;
         
         this.user = user;
         this.token = token;
