@@ -26,6 +26,7 @@ public class CreateUserRequest {
 
     private boolean enabled = true;
     private RoleName role = RoleName.REGISTRAR;
+    private Long stationId;
 
     public String getUsername() {
         return username;
@@ -75,6 +76,19 @@ public class CreateUserRequest {
         this.enabled = enabled;
     }
 
-    public RoleName getRole() { return role; }
-    public void setRole(RoleName role) { this.role = role; }
+    public RoleName getRole() {
+        return role;
+    }
+
+    public void setRole(RoleName role) {
+        this.role = role;
+    }
+
+    public Long getStationId() {
+        return stationId;
+    }
+
+    public void setStationId(Long stationId) {
+        this.stationId = stationId;
+    }
 }

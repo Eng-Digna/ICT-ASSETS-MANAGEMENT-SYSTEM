@@ -77,7 +77,7 @@
 
         <label>
           Bandari Station *
-          <select v-if="isNew" v-model="record.stationId" :class="{ invalid: errors.stationId }" required>
+          <select v-if="isNew" v-model="record.stationId" :class="{ invalid: errors.stationId }" required :disabled="!isAdmin">
             <option value="">Select station</option>
             <option v-for="stn in stations" :key="stn.id" :value="stn.id">{{ stn.name }}</option>
           </select>
@@ -106,9 +106,13 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api } from '../../services/api';
+import { useAuthStore } from '../../store/modules/auth';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.userRole === 'ADMINISTRATOR');
+const userStationId = computed(() => authStore.user?.stationId || '');
 
 const isNew = computed(() => route.name === 'AssetRegister' || route.params.id === 'new' || !route.params.id);
 
@@ -123,7 +127,7 @@ const record = reactive({
   warrantyStartDate: '',
   warrantyEndDate: '',
   departmentId: '',
-  stationId: '',
+  stationId: isAdmin.value ? '' : userStationId.value,
   department: '',
   station: '',
   status: 'REGISTERED'

@@ -58,6 +58,10 @@ public class User implements UserDetails {
     private Set<Role> roles = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "station_id")
+    private Station station;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organization organization;
 
@@ -131,6 +135,9 @@ public class User implements UserDetails {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
+    public Station getStation() { return station; }
+    public void setStation(Station station) { this.station = station; }
 
     public Organization getOrganization() {
         return organization;

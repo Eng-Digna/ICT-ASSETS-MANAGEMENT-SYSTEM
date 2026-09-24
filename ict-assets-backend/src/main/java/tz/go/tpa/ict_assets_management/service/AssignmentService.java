@@ -9,4 +9,5 @@ public interface AssignmentService {
     PageResponse<AssignmentResponse> listAssignments(AssignmentSearchFilter filter);
     AssignmentResponse getAssignment(Long id);
     AssignmentResponse transferOrReturn(Long id, TransferReturnRequest request);
+    void deleteActiveAssignment(Long id);
 }

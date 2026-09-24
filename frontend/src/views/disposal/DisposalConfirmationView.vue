@@ -181,13 +181,25 @@ const newRequestForm = reactive({
   reason: ''
 });
 
+const userStationId = computed(() => authStore.user?.stationId || '');
+
+const filteredAssets = computed(() => {
+  if (isAdmin.value || !userStationId.value) return assets.value;
+  return assets.value.filter(a => a.stationId === userStationId.value);
+});
+
 const eligibleAssets = computed(() => {
-  return assets.value.filter(a => a.status === 'REGISTERED');
+  return filteredAssets.value.filter(a => a.status === 'REGISTERED');
 });
 
 const filteredRequests = computed(() => {
-  if (!filterStatus.value) return requests.value;
-  return requests.value.filter(r => r.status === filterStatus.value);
+  let list = requests.value;
+  if (!isAdmin.value && userStationId.value) {
+    const validAssetIds = new Set(filteredAssets.value.map(a => a.id));
+    list = list.filter(r => validAssetIds.has(r.assetId));
+  }
+  if (!filterStatus.value) return list;
+  return list.filter(r => r.status === filterStatus.value);
 });
 
 async function load() {

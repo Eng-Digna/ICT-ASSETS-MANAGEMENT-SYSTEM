@@ -57,4 +57,11 @@ public class AssetController {
         return ResponseEntity.ok(assetService.updateAsset(id, request));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
+    public ResponseEntity<Void> deleteAsset(@PathVariable Long id) {
+        assetService.deleteAsset(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

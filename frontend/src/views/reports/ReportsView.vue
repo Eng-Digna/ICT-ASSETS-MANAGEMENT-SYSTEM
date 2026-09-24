@@ -114,6 +114,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { api } from '../../services/api';
+import { useAuthStore } from '../../store/modules/auth';
+
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.userRole === 'ADMINISTRATOR');
+const userStationId = computed(() => authStore.user?.stationId || '');
 
 const assets = ref([]);
 const assignments = ref([]);
@@ -174,10 +179,24 @@ async function loadData() {
       api('/maintenance-records').catch(() => ({ content: [] })),
       api('/disposal-requests').catch(() => ({ content: [] }))
     ]);
-    assets.value = Array.isArray(assetPage) ? assetPage : (assetPage.content || []);
-    assignments.value = Array.isArray(assignPage) ? assignPage : (assignPage.content || []);
-    maintenanceRecords.value = Array.isArray(maintPage) ? maintPage : (maintPage.content || []);
-    disposalRequests.value = Array.isArray(dispPage) ? dispPage : (dispPage.content || []);
+    
+    let loadedAssets = Array.isArray(assetPage) ? assetPage : (assetPage.content || []);
+    let loadedAssignments = Array.isArray(assignPage) ? assignPage : (assignPage.content || []);
+    let loadedMaint = Array.isArray(maintPage) ? maintPage : (maintPage.content || []);
+    let loadedDisp = Array.isArray(dispPage) ? dispPage : (dispPage.content || []);
+
+    if (!isAdmin.value && userStationId.value) {
+      loadedAssets = loadedAssets.filter(a => a.stationId === userStationId.value);
+      loadedAssignments = loadedAssignments.filter(a => a.stationId === userStationId.value);
+      const validAssetIds = new Set(loadedAssets.map(a => a.id));
+      loadedMaint = loadedMaint.filter(m => validAssetIds.has(m.assetId));
+      loadedDisp = loadedDisp.filter(d => validAssetIds.has(d.assetId));
+    }
+
+    assets.value = loadedAssets;
+    assignments.value = loadedAssignments;
+    maintenanceRecords.value = loadedMaint;
+    disposalRequests.value = loadedDisp;
   } catch (err) {
     console.error('Failed to load report data', err);
   }

@@ -5,6 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import tz.go.tpa.ict_assets_management.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 import tz.go.tpa.ict_assets_management.dto.request.AssetSearchFilter;
 import tz.go.tpa.ict_assets_management.dto.request.RegisterAssetRequest;
 import tz.go.tpa.ict_assets_management.dto.request.UpdateAssetRequest;
@@ -20,6 +24,9 @@ import tz.go.tpa.ict_assets_management.exception.ResourceNotFoundException;
 import tz.go.tpa.ict_assets_management.repository.AssetRepository;
 import tz.go.tpa.ict_assets_management.repository.DepartmentRepository;
 import tz.go.tpa.ict_assets_management.repository.StationRepository;
+import tz.go.tpa.ict_assets_management.repository.AssignmentRepository;
+import tz.go.tpa.ict_assets_management.entity.Assignment;
+import tz.go.tpa.ict_assets_management.enums.AssignmentStatus;
 import tz.go.tpa.ict_assets_management.service.AssetService;
 
 import java.util.ArrayList;
@@ -31,13 +38,15 @@ public class AssetServiceImpl implements AssetService {
     private final AssetRepository assetRepository;
     private final DepartmentRepository departmentRepository;
     private final StationRepository stationRepository;
+    private final AssignmentRepository assignmentRepository;
 
     public AssetServiceImpl(AssetRepository assetRepository,
             DepartmentRepository departmentRepository,
-            StationRepository stationRepository) {
+            StationRepository stationRepository, tz.go.tpa.ict_assets_management.repository.AssignmentRepository assignmentRepository) {
         this.assetRepository = assetRepository;
         this.departmentRepository = departmentRepository;
         this.stationRepository = stationRepository;
+        this.assignmentRepository = assignmentRepository;
     }
 
     @Override
@@ -72,6 +81,18 @@ public class AssetServiceImpl implements AssetService {
     public PageResponse<AssetResponse> listAssets(AssetSearchFilter filter) {
         Specification<Asset> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            
+            // Row-level security for REGISTRAR
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof User) {
+                User user = (User) auth.getPrincipal();
+                boolean isRegistrar = user.getRoles().stream().anyMatch(r -> r.getName().name().equals("REGISTRAR"));
+                boolean isAdmin = user.getRoles().stream().anyMatch(r -> r.getName().name().equals("ADMINISTRATOR"));
+                if (isRegistrar && !isAdmin && user.getStation() != null) {
+                    predicates.add(cb.equal(root.get("station").get("id"), user.getStation().getId()));
+                }
+            }
+
             if (filter.getDepartmentId() != null)
                 predicates.add(cb.equal(root.get("department").get("id"), filter.getDepartmentId()));
             if (filter.getStationId() != null)
@@ -137,6 +158,20 @@ public class AssetServiceImpl implements AssetService {
         r.setStationId(asset.getStation().getId());
         r.setDepartment(asset.getDepartment().getName());
         r.setStation(asset.getStation().getName());
+        if (asset.getStatus() == AssetStatus.ASSIGNED) {
+            assignmentRepository.findFirstByAssetIdAndStatusOrderByIdDesc(asset.getId(), AssignmentStatus.ACTIVE)
+                    .ifPresent(assignment -> r.setAssigneeName(assignment.getAssigneeName()));
+        }
         return r;
+    }
+
+    @Override
+    @Transactional
+    public void deleteAsset(Long id) {
+        Asset asset = getAssetEntityOrThrow(id);
+        if (asset.getStatus() != tz.go.tpa.ict_assets_management.enums.AssetStatus.REGISTERED) {
+            throw new IllegalStateException("Only assets with status REGISTERED can be deleted. Current status: " + asset.getStatus());
+        }
+        assetRepository.delete(asset);
     }
 }

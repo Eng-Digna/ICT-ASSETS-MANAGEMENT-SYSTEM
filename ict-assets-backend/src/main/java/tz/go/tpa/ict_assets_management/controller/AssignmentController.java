@@ -26,4 +26,11 @@ public class AssignmentController {
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
     public ResponseEntity<AssignmentResponse> transferOrReturn(@PathVariable Long id, @RequestBody TransferReturnRequest request) { return ResponseEntity.ok(assignmentService.transferOrReturn(id, request)); }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('REGISTRAR') or hasRole('ADMINISTRATOR')")
+    public ResponseEntity<Void> deleteAssignment(@PathVariable Long id) {
+        assignmentService.deleteActiveAssignment(id);
+        return ResponseEntity.noContent().build();
+    }
 }

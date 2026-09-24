@@ -7,4 +7,5 @@ import tz.go.tpa.ict_assets_management.enums.AssignmentStatus;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long>, JpaSpecificationExecutor<Assignment> {
 	boolean existsByAssetIdAndStatus(Long assetId, AssignmentStatus status);
+	java.util.Optional<Assignment> findFirstByAssetIdAndStatusOrderByIdDesc(Long assetId, AssignmentStatus status);
 }

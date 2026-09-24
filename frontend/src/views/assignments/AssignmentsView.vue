@@ -16,8 +16,18 @@
       <h2>Assign an ICT Asset</h2>
       <div class="form-grid">
         <label>
-          Available Asset *
-          <select v-model="form.assetId" required>
+          Station *
+          <select v-model="form.stationId" required :disabled="!isAdmin">
+            <option value="">Select station</option>
+            <option v-for="stn in stations" :key="stn.id" :value="stn.id">
+              {{ stn.name }}
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Available Asset (at selected Station) *
+          <select v-model="form.assetId" required :disabled="!form.stationId">
             <option value="">Select available asset</option>
             <option v-for="asset in availableAssets" :key="asset.id" :value="asset.id">
               {{ asset.serialNumber }} ({{ asset.brand }} - {{ asset.type || asset.assetType }})
@@ -26,18 +36,8 @@
         </label>
 
         <label>
-          Assigned Staff Name *
-          <input v-model="form.assigneeName" type="text" placeholder="Type full name of the staff" required />
-        </label>
-
-        <label>
-          Station *
-          <select v-model="form.stationId" required>
-            <option value="">Select station</option>
-            <option v-for="stn in stations" :key="stn.id" :value="stn.id">
-              {{ stn.name }}
-            </option>
-          </select>
+          Assigned To (Person or Location) *
+          <input v-model="form.assigneeName" type="text" placeholder="e.g. John Mwaka  or  3rd Floor – Server Room" required />
         </label>
       </div>
 
@@ -97,14 +97,23 @@
                   {{ item.status }}
                 </span>
               </td>
-              <td>
+              <td style="display: flex; gap: 8px;">
                 <button
                   v-if="item.status === 'ACTIVE'"
                   class="action-btn return-btn"
                   type="button"
                   @click="returnAsset(item.id)"
                 >
-                  Return Asset
+                  Return
+                </button>
+                <button
+                  v-if="item.status === 'ACTIVE'"
+                  class="action-btn delete-btn"
+                  type="button"
+                  title="Undo/Delete this assignment"
+                  @click="deleteAssignment(item.id)"
+                >
+                  Undo
                 </button>
                 <span v-else class="muted-text">Returned</span>
               </td>
@@ -120,8 +129,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { api } from '../../services/api';
+import { useAuthStore } from '../../store/modules/auth';
+
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.userRole === 'ADMINISTRATOR');
+const userStationId = computed(() => authStore.user?.stationId || '');
 
 const search = ref('');
 const showForm = ref(false);
@@ -130,18 +144,21 @@ const error = ref('');
 const successMsg = ref('');
 
 const form = reactive({
+  stationId: isAdmin.value ? '' : userStationId.value,
   assetId: '',
-  assigneeName: '',
-  stationId: ''
+  assigneeName: ''
 });
 
 const assignments = ref([]);
 const allAssets = ref([]);
-
 const stations = ref([]);
 
 const availableAssets = computed(() => {
-  return allAssets.value.filter(a => a.status === 'REGISTERED' || a.status === 'AVAILABLE');
+  return allAssets.value.filter(a => (a.status === 'REGISTERED' || a.status === 'AVAILABLE') && (!form.stationId || a.stationId === Number(form.stationId)));
+});
+
+watch(() => form.stationId, () => {
+  form.assetId = '';
 });
 
 const activeAssignmentsCount = computed(() => {
@@ -149,9 +166,14 @@ const activeAssignmentsCount = computed(() => {
 });
 
 const filteredAssignments = computed(() => {
+  let list = assignments.value;
+  if (!isAdmin.value && userStationId.value) {
+    list = list.filter(a => a.stationId === userStationId.value);
+  }
+
   const q = search.value.trim().toLowerCase();
-  if (!q) return assignments.value;
-  return assignments.value.filter(item => {
+  if (!q) return list;
+  return list.filter(item => {
     return [
       item.assetSerialNumber,
       item.assetType,
@@ -166,14 +188,12 @@ async function loadData() {
   try {
     const [assignmentRes, assetRes, stationRes] = await Promise.all([
       api('/assignments').catch(() => ({ content: [] })),
-      api('/assets').catch(() => ({ content: [] })),
-      
+      api('/assets?status=REGISTERED').catch(() => ({ content: [] })),
       api('/stations').catch(() => [])
     ]);
 
     assignments.value = Array.isArray(assignmentRes) ? assignmentRes : (assignmentRes.content || []);
     allAssets.value = Array.isArray(assetRes) ? assetRes : (assetRes.content || []);
-    
     stations.value = Array.isArray(stationRes) ? stationRes : (Array.isArray(stationRes) ? stationRes : (stationRes.content || []));
   } catch (err) {
     error.value = 'Failed to load assignment data: ' + err.message;
@@ -184,8 +204,8 @@ async function addAssignment() {
   error.value = '';
   successMsg.value = '';
 
-  if (!form.assetId || !form.assigneeName || !form.stationId) {
-    error.value = 'Please select asset, user, and station.';
+  if (!form.stationId || !form.assetId || !form.assigneeName) {
+    error.value = 'Please select station, asset, and assignee name.';
     return;
   }
 
@@ -200,7 +220,7 @@ async function addAssignment() {
       })
     });
     successMsg.value = 'Asset assigned successfully!';
-    Object.assign(form, { assetId: '', assigneeName: '', stationId: '' });
+    Object.assign(form, { stationId: '', assetId: '', assigneeName: '' });
     showForm.value = false;
     await loadData();
   } catch (err) {
@@ -210,8 +230,17 @@ async function addAssignment() {
   }
 }
 
-async function returnAsset(assignmentId) {
-  if (!confirm('Are you sure you want to return this asset to inventory?')) return;
+async function deleteAssignment(assignmentId) {
+  if (!confirm('Are you sure you want to permanently undo this assignment? The asset will immediately return to the REGISTERED pool.')) return;
+  try {
+    await api('/assignments/' + assignmentId, { method: 'DELETE' });
+    await loadData();
+  } catch (err) {
+    alert(err.message || 'Failed to delete assignment');
+  }
+}
+
+async function returnAsset(assignmentId) {  if (!confirm('Are you sure you want to return this asset to inventory?')) return;
   try {
     await api(`/assignments/${assignmentId}`, {
       method: 'PATCH',
@@ -241,6 +270,10 @@ onMounted(() => {
 .assignment-form { margin-bottom: 18px; }
 .assignment-form h2,.panel h2 { color: #1D2939; font-size: 16px; margin: 0 0 16px; }
 .form-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); margin-bottom: 16px; }
+.asset-info-box { background: #F0F7FF; border: 1px solid #BAD9F5; border-radius: 6px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.info-row { display: flex; justify-content: space-between; font-size: 13px; }
+.info-row span { color: #5d6878; }
+.info-row strong { color: #123f73; }
 .form-grid label { color: #475467; display: grid; font-size: 12px; font-weight: 700; gap: 6px; }
 .form-grid input,.form-grid select,.panel-heading input { border: 1px solid #CDD5DF; border-radius: 5px; color: #344054; padding: 9px; font: inherit; }
 .stats { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); margin-bottom: 18px; }

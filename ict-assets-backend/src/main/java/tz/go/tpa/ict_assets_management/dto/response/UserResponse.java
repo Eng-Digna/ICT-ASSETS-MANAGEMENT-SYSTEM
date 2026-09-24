@@ -11,6 +11,7 @@ public class UserResponse {
     private String fullName;
     private boolean enabled;
     private List<String> roles;
+    private String stationName;
 
     public Long getId() {
         return id;
@@ -74,5 +75,13 @@ public class UserResponse {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
+    }
+
+    public String getStationName() {
+        return stationName;
+    }
+
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
     }
 }

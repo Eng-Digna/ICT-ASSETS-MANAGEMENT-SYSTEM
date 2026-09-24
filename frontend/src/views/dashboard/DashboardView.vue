@@ -51,6 +51,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { api } from '../../services/api';
+import { useAuthStore } from '../../store/modules/auth';
+
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.userRole === 'ADMINISTRATOR');
+const userStationId = computed(() => authStore.user?.stationId || '');
 
 const overview = ref(null);
 const assets = ref([]);
@@ -77,10 +82,12 @@ const kpis = computed(() => {
 const colors = ['navy', 'gold', 'green'];
 const stationDistribution = computed(() => {
   const map = {};
-  assets.value.forEach(a => {
-    const stn = a.station || 'Unspecified';
-    map[stn] = (map[stn] || 0) + 1;
-  });
+  assets.value
+    .filter(a => a.status !== 'DISPOSED')
+    .forEach(a => {
+      const stn = a.station || 'Unspecified';
+      map[stn] = (map[stn] || 0) + 1;
+    });
   return Object.entries(map).map(([name, value], idx) => ({
     name,
     value,
@@ -118,7 +125,13 @@ async function loadDashboard() {
       api('/audits').catch(() => ({ content: [] }))
     ]);
     if (ovData) overview.value = ovData;
-    assets.value = Array.isArray(assetData) ? assetData : (assetData.content || []);
+    
+    let loadedAssets = Array.isArray(assetData) ? assetData : (assetData.content || []);
+    if (!isAdmin.value && userStationId.value) {
+      loadedAssets = loadedAssets.filter(a => a.stationId === userStationId.value);
+    }
+    assets.value = loadedAssets;
+    
     recentAudits.value = Array.isArray(auditData) ? auditData : (auditData.content || []);
   } catch (e) {
     error.value = e.message;

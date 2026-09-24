@@ -19,7 +19,7 @@ class AuthServiceTest {
         AuthService authService = new AuthService() {
             @Override
             public JwtAuthenticationResponse login(LoginRequest loginRequest) {
-                return new JwtAuthenticationResponse("token", "admin", java.util.List.of("ADMINISTRATOR"));
+                return new JwtAuthenticationResponse("token", "admin", java.util.List.of("ADMINISTRATOR"), null, null);
             }
         };
 
