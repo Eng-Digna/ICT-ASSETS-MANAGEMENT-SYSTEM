@@ -19,6 +19,7 @@ public class AssetResponse {
     private Long stationId;
     private String department;
     private String station;
+    private String assigneeName;
 
     // getters/setters
     public Long getId() {
@@ -122,4 +123,6 @@ public class AssetResponse {
     public void setDepartment(String department) { this.department = department; }
     public String getStation() { return station; }
     public void setStation(String station) { this.station = station; }
+    public String getAssigneeName() { return assigneeName; }
+    public void setAssigneeName(String assigneeName) { this.assigneeName = assigneeName; }
 }

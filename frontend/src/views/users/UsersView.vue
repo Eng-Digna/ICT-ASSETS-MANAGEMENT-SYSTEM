@@ -26,6 +26,12 @@
             <option value="ADMINISTRATOR">Administrator</option>
           </select>
         </label>
+        <label v-if="form.role === 'REGISTRAR'">Station (Required for Registrar)
+          <select v-model="form.stationId" required>
+            <option value="">Select station</option>
+            <option v-for="stn in stations" :key="stn.id" :value="stn.id">{{ stn.name }}</option>
+          </select>
+        </label>
       </div>
       <p v-if="error" class="form-error">{{ error }}</p>
       <p v-if="success" class="form-success">{{ success }}</p>
@@ -58,6 +64,7 @@
               <th>Username</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Station</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -68,6 +75,7 @@
               <td>{{ user.username }}</td>
               <td>{{ user.email }}</td>
               <td><span class="role">{{ user.roles?.join(', ') }}</span></td>
+              <td>{{ user.stationName || '—' }}</td>
               <td>
                 <span class="status" :class="user.enabled ? 'active' : 'disabled'">
                   {{ user.enabled ? 'Active' : 'Disabled' }}
@@ -119,9 +127,10 @@ const success = ref('');
 const saving = ref(false);
 const deleteTarget = ref(null);
 const users = ref([]);
+const stations = ref([]);
 
 const form = reactive({
-  username: '', firstName: '', lastName: '', email: '', password: '', role: 'REGISTRAR'
+  username: '', firstName: '', lastName: '', email: '', password: '', role: 'REGISTRAR', stationId: ''
 });
 
 const filteredUsers = computed(() =>
@@ -132,7 +141,7 @@ const filteredUsers = computed(() =>
 );
 
 function resetForm() {
-  Object.assign(form, { username: '', firstName: '', lastName: '', email: '', password: '', role: 'REGISTRAR' });
+  Object.assign(form, { username: '', firstName: '', lastName: '', email: '', password: '', role: 'REGISTRAR', stationId: '' });
   isEditing.value = false;
   editingId.value = null;
   error.value = '';
@@ -169,6 +178,11 @@ function editUser(user) {
 async function loadUsers() {
   const page = await api('/users');
   users.value = Array.isArray(page) ? page : (page.content || []);
+}
+
+async function loadStations() {
+  const data = await api('/stations');
+  stations.value = Array.isArray(data) ? data : (data.data || data.content || []);
 }
 
 async function saveUser() {
@@ -237,7 +251,10 @@ async function deleteUser() {
   }
 }
 
-onMounted(() => loadUsers().catch(e => (error.value = e.message)));
+onMounted(() => {
+  loadUsers().catch(e => (error.value = e.message));
+  loadStations().catch(e => (error.value = e.message));
+});
 </script>
 
 <style scoped>

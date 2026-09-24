@@ -41,8 +41,6 @@
               <th>User</th>
               <th>Action</th>
               <th>Resource / Record</th>
-              <th>Previous Value</th>
-              <th>New Value</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -60,8 +58,6 @@
                 </span>
               </td>
               <td>{{ log.resourceType ? log.resourceType + (log.resourceId ? ' #' + log.resourceId : '') : (log.endpoint || '—') }}</td>
-              <td class="muted">{{ log.previousValue || '—' }}</td>
-              <td>{{ log.newValue || '—' }}</td>
               <td>
                 <span class="status-indicator" :class="log.success ? 'success' : 'failed'">
                   {{ log.success ? 'Success' : 'Failed' }}

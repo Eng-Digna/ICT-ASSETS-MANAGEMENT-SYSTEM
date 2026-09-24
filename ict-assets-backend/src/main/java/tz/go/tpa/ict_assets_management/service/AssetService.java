@@ -21,4 +21,6 @@ public interface AssetService {
     Asset getAssetEntityOrThrow(Long id);
 
     void updateAssetStatus(Long id, AssetStatus newStatus);
+
+    void deleteAsset(Long id);
 }

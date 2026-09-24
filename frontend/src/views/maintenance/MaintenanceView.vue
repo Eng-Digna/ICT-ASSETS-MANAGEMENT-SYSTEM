@@ -114,6 +114,11 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { api } from '../../services/api';
+import { useAuthStore } from '../../store/modules/auth';
+
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.userRole === 'ADMINISTRATOR');
+const userStationId = computed(() => authStore.user?.stationId || '');
 
 const showForm = ref(false);
 const search = ref('');
@@ -130,22 +135,34 @@ const form = reactive({
 const records = ref([]);
 const assets = ref([]);
 
+const filteredAssets = computed(() => {
+  if (isAdmin.value || !userStationId.value) return assets.value;
+  return assets.value.filter(a => a.stationId === userStationId.value);
+});
+
 const serviceableAssets = computed(() => {
-  return assets.value.filter(a => a.status === 'REGISTERED' || a.status === 'AVAILABLE' || a.status === 'ASSIGNED');
+  return filteredAssets.value.filter(a => a.status === 'REGISTERED' || a.status === 'AVAILABLE' || a.status === 'ASSIGNED');
 });
 
 const assetsUnderMaintenanceCount = computed(() => {
-  return assets.value.filter(a => a.status === 'UNDER_MAINTENANCE').length;
+  return filteredAssets.value.filter(a => a.status === 'UNDER_MAINTENANCE').length;
 });
 
 const availableAssetsCount = computed(() => {
-  return assets.value.filter(a => a.status === 'REGISTERED' || a.status === 'AVAILABLE').length;
+  return filteredAssets.value.filter(a => a.status === 'REGISTERED' || a.status === 'AVAILABLE').length;
 });
 
 const filteredRecords = computed(() => {
+  let list = records.value;
+  if (!isAdmin.value && userStationId.value) {
+    // If maintenance record does not have stationId directly, we filter based on if the asset is in our filteredAssets
+    const validAssetIds = new Set(filteredAssets.value.map(a => a.id));
+    list = list.filter(r => validAssetIds.has(r.assetId));
+  }
+
   const q = search.value.trim().toLowerCase();
-  if (!q) return records.value;
-  return records.value.filter(r => {
+  if (!q) return list;
+  return list.filter(r => {
     return [
       r.assetSerialNumber,
       r.brand,

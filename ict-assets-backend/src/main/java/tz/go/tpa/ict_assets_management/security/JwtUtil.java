@@ -25,7 +25,7 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String username, List<String> roles) {
+    public String generateToken(String username, List<String> roles, Long stationId) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
         List<String> authorityValues = roles.stream()
@@ -34,6 +34,7 @@ public class JwtUtil {
         return JWT.create()
                 .withSubject(username)
                 .withClaim("roles", authorityValues)
+                .withClaim("stationId", stationId)
                 .withIssuedAt(now)
                 .withExpiresAt(exp)
                 .sign(algorithm);
@@ -56,5 +57,10 @@ public class JwtUtil {
     public List<String> getRoles(String token) {
         DecodedJWT jwt = verifier.verify(token);
         return jwt.getClaim("roles").asList(String.class);
+    }
+
+    public Long getStationId(String token) {
+        DecodedJWT jwt = verifier.verify(token);
+        return jwt.getClaim("stationId").asLong();
     }
 }

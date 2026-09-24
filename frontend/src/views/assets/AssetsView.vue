@@ -17,7 +17,7 @@
         </label>
         <label>
           <span class="sr-only">Filter by station</span>
-          <select v-model="filters.station">
+          <select v-model="filters.station" :disabled="!isAdmin">
             <option value="">All Stations</option>
             <option v-for="stn in stations" :key="stn.id || stn" :value="stn.name || stn">{{ stn.name || stn }}</option>
           </select>
@@ -48,6 +48,7 @@
               <th>Brand / Model</th>
               <th>Department</th>
               <th>Station</th>
+              <th>Assigned To</th>
               <th>Status</th>
               <th><span class="sr-only">Actions</span></th>
             </tr>
@@ -59,19 +60,28 @@
               <td>{{ asset.brand }} {{ asset.model ? '— ' + asset.model : '' }}</td>
               <td>{{ asset.department || '—' }}</td>
               <td>{{ asset.station || '—' }}</td>
+              <td>{{ asset.assigneeName || '—' }}</td>
               <td>
                 <span class="status" :class="statusClass(asset.status)">
                   {{ formatStatus(asset.status) }}
                 </span>
               </td>
-              <td>
+              <td class="action-cell">
                 <RouterLink class="view-link" :to="{ name: 'AssetDetail', params: { id: asset.id } }">
                   View
                 </RouterLink>
+                <button
+                  v-if="asset.status === 'REGISTERED'"
+                  class="delete-btn"
+                  title="Delete this asset"
+                  @click="deleteAsset(asset)"
+                >
+                  Delete
+                </button>
               </td>
             </tr>
             <tr v-if="filteredAssets.length === 0">
-              <td colspan="7" class="empty-state">No assets match the current search and filters.</td>
+              <td colspan="8" class="empty-state">No assets match the current search and filters.</td>
             </tr>
           </tbody>
         </table>
@@ -88,8 +98,13 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '../../services/api';
+import { useAuthStore } from '../../store/modules/auth';
 
 const router = useRouter();
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.userRole === 'ADMINISTRATOR');
+const userStationName = computed(() => authStore.user?.stationName || '');
+
 const assets = ref([]);
 const departments = ref([]);
 const stations = ref([]);
@@ -117,8 +132,9 @@ const filteredAssets = computed(() => {
     const matchesStation = !filters.station || (asset.station === filters.station);
     const matchesDepartment = !filters.department || (asset.department === filters.department);
     const matchesType = !filters.type || (asset.type === filters.type || asset.assetType === filters.type);
+    const isNotDisposed = asset.status !== 'DISPOSED';
 
-    return matchesQuery && matchesStation && matchesDepartment && matchesType;
+    return matchesQuery && matchesStation && matchesDepartment && matchesType && isNotDisposed;
   });
 });
 
@@ -126,7 +142,7 @@ const hasFilters = computed(() => Boolean(searchQuery.value || filters.station |
 
 function clearFilters() {
   searchQuery.value = '';
-  filters.station = '';
+  filters.station = isAdmin.value ? '' : userStationName.value;
   filters.department = '';
   filters.type = '';
 }
@@ -145,6 +161,10 @@ function registerAsset() {
 }
 
 onMounted(async () => {
+  if (!isAdmin.value && userStationName.value) {
+    filters.station = userStationName.value;
+  }
+  
   try {
     const [page, depts, stns] = await Promise.all([
       api('/assets'),
@@ -159,6 +179,16 @@ onMounted(async () => {
     assets.value = [];
   }
 });
+
+async function deleteAsset(asset) {
+  if (!confirm(`Are you sure you want to permanently delete asset "${asset.serialNumber}"? This cannot be undone.`)) return;
+  try {
+    await api(`/assets/${asset.id}`, { method: 'DELETE' });
+    assets.value = assets.value.filter(a => a.id !== asset.id);
+  } catch (err) {
+    alert('Failed to delete asset: ' + (err.message || 'Unknown error'));
+  }
+}
 </script>
 
 <style scoped>
@@ -191,6 +221,9 @@ h1 { color: #1D2939; font-size: 24px; margin: 0; }
 .under-maintenance { background: #DCEEFE; color: #2674A8; }
 .view-link { color: #344054; text-decoration: none; }
 .view-link:hover { color: #2E90C8; text-decoration: underline; }
+.action-cell { display: flex; align-items: center; gap: 10px; }
+.delete-btn { background: none; border: 1px solid #FDA29B; border-radius: 4px; color: #B42318; cursor: pointer; font-size: 12px; font-weight: 600; padding: 3px 9px; }
+.delete-btn:hover { background: #FEF3F2; }
 .empty-state { color: #7A8699 !important; padding: 38px 10px !important; text-align: center; }
 .table-footer { color: #7A8699; display: flex; font-size: 12px; justify-content: space-between; padding: 14px 18px 17px; }
 .directory-note { color: #98A2B3; }

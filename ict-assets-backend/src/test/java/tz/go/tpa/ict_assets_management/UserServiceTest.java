@@ -9,6 +9,7 @@ import tz.go.tpa.ict_assets_management.entity.User;
 import tz.go.tpa.ict_assets_management.repository.RoleRepository;
 import tz.go.tpa.ict_assets_management.repository.UserRepository;
 import tz.go.tpa.ict_assets_management.service.impl.UserServiceImpl;
+import tz.go.tpa.ict_assets_management.repository.StationRepository;
 
 import java.util.Optional;
 
@@ -22,6 +23,7 @@ class UserServiceTest {
         UserRepository userRepository = mock(UserRepository.class);
         RoleRepository roleRepository = mock(RoleRepository.class);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        StationRepository stationRepository = mock(StationRepository.class);
 
         when(userRepository.existsByUsername("alice")).thenReturn(false);
         when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
@@ -39,7 +41,7 @@ class UserServiceTest {
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        UserServiceImpl service = new UserServiceImpl(userRepository, roleRepository, passwordEncoder);
+        UserServiceImpl service = new UserServiceImpl(userRepository, roleRepository, passwordEncoder, stationRepository);
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername("alice");
         request.setEmail("alice@example.com");

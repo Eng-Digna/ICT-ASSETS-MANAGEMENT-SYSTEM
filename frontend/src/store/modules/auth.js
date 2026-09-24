@@ -22,7 +22,12 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         const result = await api('/auth/login', { method: 'POST', body: JSON.stringify({ username: credentials.username, password: credentials.password }) });
-        const user = { username: result.username, roles: result.roles || [] };
+        const user = { 
+          username: result.username, 
+          roles: result.roles || [],
+          stationId: result.stationId,
+          stationName: result.stationName
+        };
         const token = result.token;
         
         this.user = user;

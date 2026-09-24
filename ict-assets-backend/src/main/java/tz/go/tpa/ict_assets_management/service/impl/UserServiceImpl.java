@@ -11,10 +11,12 @@ import tz.go.tpa.ict_assets_management.dto.request.UpdateUserRequest;
 import tz.go.tpa.ict_assets_management.dto.response.UserResponse;
 import tz.go.tpa.ict_assets_management.entity.Role;
 import tz.go.tpa.ict_assets_management.entity.RoleName;
+import tz.go.tpa.ict_assets_management.entity.Station;
 import tz.go.tpa.ict_assets_management.entity.User;
 import tz.go.tpa.ict_assets_management.exception.DuplicateResourceException;
 import tz.go.tpa.ict_assets_management.exception.ResourceNotFoundException;
 import tz.go.tpa.ict_assets_management.repository.RoleRepository;
+import tz.go.tpa.ict_assets_management.repository.StationRepository;
 import tz.go.tpa.ict_assets_management.repository.UserRepository;
 import tz.go.tpa.ict_assets_management.service.UserService;
 
@@ -24,11 +26,14 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final StationRepository stationRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder, StationRepository stationRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.stationRepository = stationRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -52,9 +57,25 @@ public class UserServiceImpl implements UserService {
 
         RoleName requestedRole = request.getRole() == null ? RoleName.REGISTRAR : request.getRole();
         Role role = roleRepository.findByName(requestedRole)
-            .orElseGet(() -> roleRepository.save(new Role(requestedRole,
-                    requestedRole == RoleName.ADMINISTRATOR ? "System administrator" : "Station-level ICT officer")));
+                .orElseGet(() -> roleRepository.save(new Role(requestedRole,
+                        requestedRole == RoleName.ADMINISTRATOR ? "System administrator"
+                                : "Station-level ICT officer")));
         user.getRoles().add(role);
+
+        if (requestedRole == RoleName.REGISTRAR) {
+            if (request.getStationId() == null) {
+                throw new IllegalArgumentException("Station is required for Registrar users");
+            }
+            Station station = stationRepository.findById(request.getStationId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Station not found with id: " + request.getStationId()));
+            user.setStation(station);
+        } else if (request.getStationId() != null) {
+            Station station = stationRepository.findById(request.getStationId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Station not found with id: " + request.getStationId()));
+            user.setStation(station);
+        }
 
         return toResponse(userRepository.save(user));
     }
@@ -83,11 +104,16 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateResourceException("Email already exists");
         }
 
-        if (request.getUsername() != null) user.setUsername(request.getUsername());
-        if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
-        if (request.getLastName() != null) user.setLastName(request.getLastName());
-        if (request.getEnabled() != null) user.setEnabled(request.getEnabled());
+        if (request.getUsername() != null)
+            user.setUsername(request.getUsername());
+        if (request.getEmail() != null)
+            user.setEmail(request.getEmail());
+        if (request.getFirstName() != null)
+            user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null)
+            user.setLastName(request.getLastName());
+        if (request.getEnabled() != null)
+            user.setEnabled(request.getEnabled());
 
         return toResponse(userRepository.save(user));
     }
@@ -158,6 +184,7 @@ public class UserServiceImpl implements UserService {
         response.setEnabled(user.isEnabled());
         response.setFullName(user.getFullName());
         response.setRoles(user.getRoles().stream().map(Role::getName).map(Enum::name).toList());
+        response.setStationName(user.getStation() != null ? user.getStation().getName() : null);
         return response;
     }
 }

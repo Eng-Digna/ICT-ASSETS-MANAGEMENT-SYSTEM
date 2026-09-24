@@ -8,15 +8,21 @@
       <form @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="username">Username</label>
-          <input id="username" v-model="username" type="text" placeholder="e.g. jmwkalinga" autocomplete="username" required />
+          <input id="username" v-model="username" type="text" placeholder="e.g. jmwkalinga" autocomplete="username" required :disabled="loading" />
         </div>
 
         <div class="form-group">
           <label for="password">Password</label>
-          <input id="password" v-model="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+          <input id="password" v-model="password" type="password" placeholder="Enter your password" autocomplete="current-password" required :disabled="loading" />
         </div>
 
-        <button type="submit" class="btn-primary">Log In</button>
+        <div v-if="loginError" class="error-alert" role="alert">
+          <span>⚠ {{ loginError }}</span>
+        </div>
+
+        <button type="submit" class="btn-primary" :disabled="loading">
+          {{ loading ? 'Signing in…' : 'Log In' }}
+        </button>
       </form>
 
       <p class="login-help">Forgot your password? Contact your ICT Administrator</p>
@@ -37,14 +43,20 @@ const authStore = useAuthStore();
 const username = ref('');
 const password = ref('');
 const loginError = ref('');
+const loading = ref(false);
 
 const handleLogin = async () => {
   loginError.value = '';
-  const result = await authStore.login({ username: username.value, password: password.value });
-  if (result.success) {
-    router.push('/');
-  } else {
-    loginError.value = result.error || 'Invalid credentials. Please try again.';
+  loading.value = true;
+  try {
+    const result = await authStore.login({ username: username.value, password: password.value });
+    if (result.success) {
+      router.push('/');
+    } else {
+      loginError.value = result.error || 'Incorrect username or password. Please try again.';
+    }
+  } finally {
+    loading.value = false;
   }
 };
 </script>
@@ -139,6 +151,18 @@ const handleLogin = async () => {
   margin: 15px 0 0;
   color: #5d6878;
   font-size: 12px;
+}
+
+.error-alert {
+  background: #FEF0EE;
+  border: 1px solid #F4B8B3;
+  border-radius: 8px;
+  color: #C0392B;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  text-align: left;
 }
 
 @media (max-width: 768px) {
